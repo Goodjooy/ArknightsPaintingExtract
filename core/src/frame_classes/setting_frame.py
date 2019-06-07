@@ -95,8 +95,9 @@ class Setting(MyDialogSetting):
         self.setting_hold.initial_val()
 
     def open_name_defined(self, event):
-        dialog = NameEditFrame(self)
-        dialog.ShowModal()
+        wx.MessageBox("暂未开放")
+        # dialog = NameEditFrame(self)
+        # dialog.ShowModal()
 
     def ok_press(self, event):
         self.save_info()

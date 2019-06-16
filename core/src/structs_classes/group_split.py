@@ -38,17 +38,17 @@ class PerImage(PerInfo):
 
         self.region_id = tree.AppendItem(self.tree_ID, "预览切割")
 
-    def is_inside_id(self, id):
-        if id == self.region_id:
+    def is_inside_id(self, id_got):
+        if id_got == self.region_id:
             return True
         else:
-            return super(PerImage, self).is_inside_id(id)
+            return super(PerImage, self).is_inside_id(id_got)
 
-    def find_sub_key(self, id):
-        if id == self.region_id:
+    def find_sub_key(self, id_got):
+        if id_got == self.region_id:
             return True, True, self.data.td_region_type, 0, self
         else:
-            return super(PerImage, self).find_sub_key(id)
+            return super(PerImage, self).find_sub_key(id_got)
 
     def open_image(self):
         if self.is_able():

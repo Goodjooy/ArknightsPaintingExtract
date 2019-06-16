@@ -2,16 +2,17 @@ import json
 import os
 import re
 from functools import reduce
-from imghdr import what
-
-import PIL.Image
 from re import match, split
 
+import PIL.Image
 import numpy
+from PIL import Image
 
+from core.src.static_classes.static_data import GlobalData
 from core.src.structs_classes.atlas_structs import PerAtlas
 from core.src.structs_classes.extract_structs import PerInfo
 from core.src.structs_classes.group_split import PerImage
+from core.src.structs_classes.image_resize import PerResize
 
 
 class ImageWork(object):
@@ -142,7 +143,7 @@ class ImageWork(object):
             return False, str(info)
         except ValueError as info:
             return False, "math" + str(info)
-        except AssertionError as info:
+        except AssertionError:
             return False, "尺寸匹配错误"
         else:
             return True, "成功还原：%s" % now_info.cn_name
@@ -330,8 +331,8 @@ class ImageWork(object):
                     re_val.append(ImageWork.transform_image(val, size))
 
                 return True, re_val
-            except Exception:
-                return False, None
+            except Exception as _:
+                return False, _
 
         return view
 
@@ -348,6 +349,75 @@ class ImageWork(object):
                 for index in range(len(val_list)):
                     val = val_list[index]
                     val.save(os.path.join(path, f"{index}.png"))
+            except Exception as info:
+                return False, info
+            else:
+                return True, "successfully"
+
+        return export
+
+    """图像拉伸部分"""
+
+    @staticmethod
+    def image_resize_main(img: Image.Image, type_is, value_w=0, value_h=0):
+        data = GlobalData()
+        if type_is == data.irt_default or type_is == data.irt_scale:
+            if type_is == data.irt_default:
+                scale = [16, 9]
+            else:
+                scale = [value_w, value_h]
+            size = [0, 0]
+            size_img = img.size
+            wh = size_img[0] / size_img[1]
+            sc = scale[0] / scale[1]
+
+            if wh < sc:
+                size[0] = round(size_img[1] / scale[1] * scale[0])
+                size[1] = round(size_img[1])
+            elif wh == sc:
+                size = size_img
+
+            else:
+                size[1] = round(size_img[0] / scale[0] * scale[1])
+                size[0] = round(size_img[0])
+
+        else:
+            size = [value_w, value_h]
+
+        pic = img.resize(size)
+
+        return pic
+
+    @staticmethod
+    def image_resize_view(value: PerResize, size, type_is, value_w=0, value_h=0):
+        try:
+            if value.is_need_work():
+                img = ImageWork.deal_mrfz(value.mesh_path, value.tex_path)
+            else:
+                img = PIL.Image.open(value.tex_path)
+
+            pic = ImageWork.image_resize_main(img, type_is, value_w, value_h)
+
+            pic, size = ImageWork.transform_image(pic, size)
+
+        except Exception as info:
+            return False, info
+        else:
+            return True, pic
+
+    @staticmethod
+    def image_resize_export_builder(type_is, value_w=0, value_h=0):
+        def export(value: PerResize):
+            try:
+                if value.is_need_work():
+                    img = ImageWork.deal_mrfz(value.mesh_path, value.tex_path)
+                else:
+                    img = PIL.Image.open(value.tex_path)
+
+                pic = ImageWork.image_resize_main(img, type_is, value_w, value_h)
+
+                pic.save(value.save_path)
+
             except Exception as info:
                 return False, info
             else:

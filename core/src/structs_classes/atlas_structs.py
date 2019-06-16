@@ -113,17 +113,25 @@ class PerAtlas(PerInfo):
         val.is_able_work = val.is_able()
         return val
 
-    def is_inside_id(self, id):
-        if id == self.region_id:
+    def is_inside_id(self, id_got):
+        if id_got == self.region_id:
+            return True
+        elif id_got == self.atlas_id:
+            return True
+        elif id_got in self.more_atlas_ids:
             return True
         else:
-            return super(PerAtlas, self).is_inside_id(id)
+            return super(PerAtlas, self).is_inside_id(id_got)
 
-    def find_sub_key(self, id):
-        if id == self.region_id:
+    def find_sub_key(self, id_got):
+        if id_got == self.region_id:
             return True, True, self.data.td_region_type, 0, self
+        elif id_got == self.atlas_id:
+            return True, True, self.data.td_atlas_type, 0, self
+        elif id_got in self.more_atlas_ids:
+            return True, False, self.data.td_atlas_type, self.more_atlas_ids.index(id_got), self
         else:
-            return super(PerAtlas, self).find_sub_key(id)
+            return super(PerAtlas, self).find_sub_key(id_got)
 
 
 class AtlasList(PerWorkList):

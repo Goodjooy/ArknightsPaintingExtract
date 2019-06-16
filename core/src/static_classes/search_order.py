@@ -19,7 +19,7 @@ class SearchOrder(object):
             return f'{x}.*\\{y}'
 
     @staticmethod
-    def find(string: str, array_enter: list, is_regex=False,is_inverse=False):
+    def find(string: str, array_enter: list, is_regex=False, is_inverse=False):
         """
         search
         :param is_inverse:

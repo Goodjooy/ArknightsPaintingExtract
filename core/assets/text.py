@@ -2,7 +2,9 @@ import os
 import re
 from tkinter.messagebox import showinfo
 
-showinfo("lala", "lala")
+from core.src.static_classes.image_deal import ImageWork
+
+#showinfo("lala", "lala")
 
 from core.src.structs_classes.atlas_structs import PerAtlas
 
@@ -40,5 +42,7 @@ if __name__ == '__main__' and False:
     print(type(A))
 
 if __name__ == '__main__':
-    val = PerAtlas("aa", "cc", False)
-    print(...)
+    import PIL.Image
+    img=PIL.Image.open("img.jpg")
+    val = ImageWork.image_resize_main(img,1,1,2)
+    val.show()

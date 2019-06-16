@@ -165,21 +165,21 @@ class PerInfo(BasicInfo):
 
         return os.path.isfile(val.tex_path), val
 
-    def is_inside_id(self, id):
-        val = id == self.tex_id == id or id in self.more_tex_per_id or self.mesh_id == id or \
-              id in self.more_mesh_per_id
+    def is_inside_id(self, id_got):
+        val = id_got == self.tex_id == id_got or id_got in self.more_tex_per_id or self.mesh_id == id_got or \
+              id_got in self.more_mesh_per_id
 
         return val
 
-    def find_sub_key(self, id):
-        if id == self.tex_id:
+    def find_sub_key(self, id_got):
+        if id_got == self.tex_id:
             return True, self.data.td_single, self.data.td_texture_type, 0, self
-        elif id == self.mesh_id:
+        elif id_got == self.mesh_id:
             return True, self.data.td_single, self.data.td_mesh_type, 0, self
-        elif id in self.more_tex_per_id:
-            return True, self.data.td_list_item, self.data.td_texture_type, self.more_tex_per_id.index(id), self
-        elif id in self.more_mesh_per_id:
-            return True, self.data.td_list_item, self.data.td_mesh_type, self.more_mesh_per_id.index(id), self
+        elif id_got in self.more_tex_per_id:
+            return True, self.data.td_list_item, self.data.td_texture_type, self.more_tex_per_id.index(id_got), self
+        elif id_got in self.more_mesh_per_id:
+            return True, self.data.td_list_item, self.data.td_mesh_type, self.more_mesh_per_id.index(id_got), self
 
 
 class PerWorkList(BasicInfoList):
@@ -201,27 +201,27 @@ class PerWorkList(BasicInfoList):
         return PerWorkList(super(PerWorkList, self).remove(item))
 
     # 查找部分
-    def find_by_id(self, id):
-        values = list(filter(lambda x: self._info_dict[x].tree_ID == id, self._key_list))
+    def find_by_id(self, id_got):
+        values = list(filter(lambda x: self._info_dict[x].tree_ID == id_got, self._key_list))
         if values.__len__() == 0:
             return False, None
         return True, self[values[0]]
 
-    def find_in_each(self, id) -> (bool, bool, int, int, PerInfo):
+    def find_in_each(self, id_got) -> (bool, bool, int, int, PerInfo):
         """
 
-        :param id:
+        :param id_got:
         :return: (是否成功，类型【单个True，列表False】，类型，索引，对象本身)
         """
         target = None
         for value in self:
-            if value.is_inside_id(id):
+            if value.is_inside_id(id_got):
                 target = value
                 break
         if target is None:
             return False, False, False, -1, None
         else:
-            return target.find_sub_key(id)
+            return target.find_sub_key(id_got)
 
             # 添加部分
 

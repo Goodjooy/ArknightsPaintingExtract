@@ -11,7 +11,7 @@ from core.src.structs_classes.atlas_structs import AtlasList
 
 
 class DragOrderPainting(wx.FileDropTarget):
-    def __init__(self, parent: es.PerWorkList, view_work: es.PerWorkList, frame: MainFrame,work_on_tree,work_on_root):
+    def __init__(self, parent: es.PerWorkList, view_work: es.PerWorkList, frame: MainFrame, work_on_tree, work_on_root):
         super(DragOrderPainting, self).__init__()
         self.work_on_root = work_on_root
         self.work_on_tree = work_on_tree
@@ -27,13 +27,14 @@ class DragOrderPainting(wx.FileDropTarget):
             file_names = list(file_names)
             self.frame.m_staticText_info.SetLabel(f"开始导入{len(filenames)}个文件")
 
-            dir_name = (filter(lambda x: not os.path.isfile(x), file_names))
-            dir_name = map(lambda x: FileFilter.all_file(x), dir_name)
-            list(map(lambda x: file_names.extend(x), dir_name))
+            dir_name = (filter(lambda val: not os.path.isfile(val), file_names))
+            dir_name = map(lambda val: FileFilter.all_file(val), dir_name)
+            list(map(lambda val: file_names.extend(val), dir_name))
 
-            file_names = (filter(lambda x: os.path.isfile(x), file_names))
+            file_names = (filter(lambda val: os.path.isfile(val), file_names))
 
-            paths = list(filter(lambda x: re.match(r'^UISprite\s#\d+\.png$', os.path.basename(x)) is None, file_names))
+            paths = list(filter(lambda val: re.match(r'^UISprite\s#\d+\.png$', os.path.basename(val)) is None,
+                                file_names))
 
             returned_tex, tex_info = FileFilter.file_deal(paths, self.parent, False,
                                                           self.frame.g_setting_info[self.data.sk_input_filter_tex],
@@ -76,13 +77,14 @@ class DragOrderAtlas(wx.FileDropTarget):
             file_names = list(file_names)
             self.frame.m_staticText_info.SetLabel(f"开始导入{len(filenames)}个文件")
 
-            dir_name = (filter(lambda x: not os.path.isfile(x), file_names))
-            dir_name = map(lambda x: FileFilter.all_file(x), dir_name)
-            list(map(lambda x: file_names.extend(x), dir_name))
+            dir_name = (filter(lambda val: not os.path.isfile(val), file_names))
+            dir_name = map(lambda val: FileFilter.all_file(val), dir_name)
+            list(map(lambda val: file_names.extend(val), dir_name))
 
-            file_names = (filter(lambda x: os.path.isfile(x), file_names))
+            file_names = (filter(lambda val: os.path.isfile(val), file_names))
 
-            paths = list(filter(lambda x: re.match(r'^UISprite\s#\d+\.png$', os.path.basename(x)) is None, file_names))
+            paths = list(filter(lambda val: re.match(r'^UISprite\s#\d+\.png$', os.path.basename(val)) is None,
+                                file_names))
 
             atlas_return, info = FileFilter.file_deal(paths, self.parent, False,
                                                       r"^.+\.(?:atlas|atlas\.txt)$", type_set=self.data.fi_atlas_type

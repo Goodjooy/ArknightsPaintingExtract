@@ -176,33 +176,55 @@ class MainFrame ( wx.Frame ):
 		self.m_panel7 = wx.Panel( self.m_notebook_work_type, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer272 = wx.BoxSizer( wx.VERTICAL )
 
-		self.m_searchCtrl32 = wx.SearchCtrl( self.m_panel7, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER|wx.TE_PROCESS_ENTER )
-		self.m_searchCtrl32.ShowSearchButton( True )
-		self.m_searchCtrl32.ShowCancelButton( False )
-		bSizer272.Add( self.m_searchCtrl32, 0, wx.ALL|wx.EXPAND, 5 )
+		self.m_rs_searchCtrl_resize = wx.SearchCtrl( self.m_panel7, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER|wx.TE_PROCESS_ENTER )
+		self.m_rs_searchCtrl_resize.ShowSearchButton( True )
+		self.m_rs_searchCtrl_resize.ShowCancelButton( True )
+		bSizer272.Add( self.m_rs_searchCtrl_resize, 0, wx.ALL|wx.EXPAND, 5 )
 
-		self.m_treeCtrl32 = wx.TreeCtrl( self.m_panel7, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE|wx.TR_FULL_ROW_HIGHLIGHT|wx.TR_HAS_BUTTONS|wx.TR_HAS_VARIABLE_ROW_HEIGHT|wx.TR_HIDE_ROOT|wx.TR_ROW_LINES|wx.TR_SINGLE|wx.TR_TWIST_BUTTONS )
-		self.m_treeCtrl32.SetMinSize( wx.Size( 300,-1 ) )
-		self.m_treeCtrl32.SetMaxSize( wx.Size( 300,-1 ) )
-
-		bSizer272.Add( self.m_treeCtrl32, 1, wx.ALL|wx.EXPAND, 5 )
+		self.m_rs_treeCtrl_info = wx.TreeCtrl( self.m_panel7, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE|wx.TR_FULL_ROW_HIGHLIGHT|wx.TR_HAS_BUTTONS|wx.TR_HAS_VARIABLE_ROW_HEIGHT|wx.TR_HIDE_ROOT|wx.TR_ROW_LINES|wx.TR_SINGLE|wx.TR_TWIST_BUTTONS )
+		bSizer272.Add( self.m_rs_treeCtrl_info, 1, wx.ALL|wx.EXPAND, 5 )
 
 		bSizer302 = wx.BoxSizer( wx.HORIZONTAL )
 
-		self.m_button102 = wx.Button( self.m_panel7, wx.ID_ANY, u"MyButton", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer302.Add( self.m_button102, 0, wx.ALL, 5 )
+		self.m_rs_bpButton_exoprt = wx.BitmapButton( self.m_panel7, wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
 
-		self.m_staticline262 = wx.StaticLine( self.m_panel7, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
-		bSizer302.Add( self.m_staticline262, 0, wx.EXPAND |wx.ALL, 5 )
+		self.m_rs_bpButton_exoprt.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_FILE_SAVE, wx.ART_BUTTON ) )
+		bSizer302.Add( self.m_rs_bpButton_exoprt, 0, wx.ALL, 5 )
 
-		self.m_button112 = wx.Button( self.m_panel7, wx.ID_ANY, u"MyButton", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer302.Add( self.m_button112, 0, wx.ALL, 5 )
+		self.m_staticline42 = wx.StaticLine( self.m_panel7, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL|wx.LI_VERTICAL )
+		bSizer302.Add( self.m_staticline42, 0, wx.EXPAND |wx.ALL, 5 )
 
-		self.m_staticline272 = wx.StaticLine( self.m_panel7, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
-		bSizer302.Add( self.m_staticline272, 0, wx.EXPAND |wx.ALL, 5 )
+		m_rs_choice_typeChoices = [ u"默认", u"比例", u"尺寸" ]
+		self.m_rs_choice_type = wx.Choice( self.m_panel7, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_rs_choice_typeChoices, 0 )
+		self.m_rs_choice_type.SetSelection( 0 )
+		bSizer302.Add( self.m_rs_choice_type, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 
-		self.m_button122 = wx.Button( self.m_panel7, wx.ID_ANY, u"MyButton", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer302.Add( self.m_button122, 0, wx.ALL, 5 )
+		self.m_staticline41 = wx.StaticLine( self.m_panel7, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
+		bSizer302.Add( self.m_staticline41, 0, wx.EXPAND |wx.ALL, 5 )
+
+		bSizer40 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_rs_textCtrl_wide = wx.TextCtrl( self.m_panel7, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER|wx.TE_PROCESS_ENTER )
+		self.m_rs_textCtrl_wide.SetMinSize( wx.Size( 75,-1 ) )
+		self.m_rs_textCtrl_wide.SetMaxSize( wx.Size( 75,-1 ) )
+
+		bSizer40.Add( self.m_rs_textCtrl_wide, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, 5 )
+
+		self.m_rs_staticText_type = wx.StaticText( self.m_panel7, wx.ID_ANY, u":", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTER_HORIZONTAL )
+		self.m_rs_staticText_type.Wrap( -1 )
+
+		self.m_rs_staticText_type.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, False, "@Adobe 黑体 Std R" ) )
+
+		bSizer40.Add( self.m_rs_staticText_type, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+		self.m_rs_textCtrl_high = wx.TextCtrl( self.m_panel7, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER|wx.TE_PROCESS_ENTER )
+		self.m_rs_textCtrl_high.SetMinSize( wx.Size( 75,-1 ) )
+		self.m_rs_textCtrl_high.SetMaxSize( wx.Size( 75,-1 ) )
+
+		bSizer40.Add( self.m_rs_textCtrl_high, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND, 5 )
+
+
+		bSizer302.Add( bSizer40, 1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL, 5 )
 
 
 		bSizer272.Add( bSizer302, 0, wx.EXPAND, 5 )
@@ -225,18 +247,35 @@ class MainFrame ( wx.Frame ):
 		self.m_staticline1 = wx.StaticLine( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
 		bSizer6.Add( self.m_staticline1, 0, wx.EXPAND |wx.ALL, 5 )
 
-		self.m_scrolledWindow2 = wx.ScrolledWindow( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.VSCROLL )
-		self.m_scrolledWindow2.SetScrollRate( 5, 5 )
+		self.m_simplebook1 = wx.Simplebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_panel9 = wx.Panel( self.m_simplebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.m_panel9.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+
 		bSizer12 = wx.BoxSizer( wx.VERTICAL )
 
-		self.m_bitmap_show = wx.StaticBitmap( self.m_scrolledWindow2, wx.ID_ANY, wx.ArtProvider.GetBitmap( wx.ART_MISSING_IMAGE, wx.ART_OTHER ), wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_bitmap_show = wx.StaticBitmap( self.m_panel9, wx.ID_ANY, wx.ArtProvider.GetBitmap( wx.ART_MISSING_IMAGE, wx.ART_OTHER ), wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer12.Add( self.m_bitmap_show, 1, wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_VERTICAL, 5 )
 
 
-		self.m_scrolledWindow2.SetSizer( bSizer12 )
-		self.m_scrolledWindow2.Layout()
-		bSizer12.Fit( self.m_scrolledWindow2 )
-		bSizer6.Add( self.m_scrolledWindow2, 1, wx.EXPAND |wx.ALL, 5 )
+		self.m_panel9.SetSizer( bSizer12 )
+		self.m_panel9.Layout()
+		bSizer12.Fit( self.m_panel9 )
+		self.m_simplebook1.AddPage( self.m_panel9, u"a page", False )
+		self.m_panel_text = wx.Panel( self.m_simplebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.m_panel_text.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
+
+		bSizer41 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_textCtrl_info = wx.TextCtrl( self.m_panel_text, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.TE_DONTWRAP|wx.TE_LEFT|wx.TE_MULTILINE|wx.TE_READONLY )
+		bSizer41.Add( self.m_textCtrl_info, 1, wx.ALL|wx.EXPAND, 5 )
+
+
+		self.m_panel_text.SetSizer( bSizer41 )
+		self.m_panel_text.Layout()
+		bSizer41.Fit( self.m_panel_text )
+		self.m_simplebook1.AddPage( self.m_panel_text, u"a page", False )
+
+		bSizer6.Add( self.m_simplebook1, 1, wx.EXPAND |wx.ALL, 5 )
 
 
 		bSizer1.Add( bSizer6, 1, wx.EXPAND, 5 )
@@ -269,12 +308,14 @@ class MainFrame ( wx.Frame ):
 		self.m_p_button_work.Bind( wx.EVT_BUTTON, self.p_work )
 		self.m_p_button_change.Bind( wx.EVT_BUTTON, self.p_choice_file )
 		self.m_p_button_setting.Bind( wx.EVT_BUTTON, self.p_setting )
+		self.m_a_searchCtrl_atlas.Bind( wx.EVT_SEARCHCTRL_CANCEL_BTN, self.a_cancel )
 		self.m_a_searchCtrl_atlas.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self.a_search )
 		self.m_a_searchCtrl_atlas.Bind( wx.EVT_TEXT_ENTER, self.a_search )
 		self.m_a_treeCtrl_atlas.Bind( wx.EVT_TREE_SEL_CHANGED, self.a_tree_select )
 		self.m_a_button_updata.Bind( wx.EVT_BUTTON, self.a_update_atlas )
 		self.m_a_button_change_atlas.Bind( wx.EVT_BUTTON, self.a_change_atlas )
 		self.m_a_button_export.Bind( wx.EVT_BUTTON, self.a_export )
+		self.m_ar_searchCtrl_array.Bind( wx.EVT_SEARCHCTRL_CANCEL_BTN, self.ar_cancel )
 		self.m_ar_searchCtrl_array.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self.ar_search )
 		self.m_ar_searchCtrl_array.Bind( wx.EVT_TEXT_ENTER, self.ar_search )
 		self.m_ar_treeCtrl_array.Bind( wx.EVT_TREE_SEL_CHANGED, self.ar_tree_select )
@@ -282,6 +323,17 @@ class MainFrame ( wx.Frame ):
 		self.m_bpButton9.Bind( wx.EVT_BUTTON, self.ar_new_spliter )
 		self.m_bpButton10.Bind( wx.EVT_BUTTON, self.ar_remove_spliter )
 		self.m_ar_button_export.Bind( wx.EVT_BUTTON, self.ar_export )
+		self.m_rs_searchCtrl_resize.Bind( wx.EVT_SEARCHCTRL_CANCEL_BTN, self.rs_cancel )
+		self.m_rs_searchCtrl_resize.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self.rs_search )
+		self.m_rs_searchCtrl_resize.Bind( wx.EVT_TEXT_ENTER, self.rs_search )
+		self.m_rs_treeCtrl_info.Bind( wx.EVT_TREE_SEL_CHANGED, self.rs_item_select )
+		self.m_rs_bpButton_exoprt.Bind( wx.EVT_BUTTON, self.rs_export )
+		self.m_rs_choice_type.Bind( wx.EVT_CHOICE, self.rs_type_select )
+		self.m_rs_choice_type.Bind( wx.EVT_MOUSEWHEEL, self.rs_type_wheel )
+		self.m_rs_textCtrl_wide.Bind( wx.EVT_MOUSEWHEEL, self.rs_wide_wheel )
+		self.m_rs_textCtrl_wide.Bind( wx.EVT_TEXT, self.rs_wide_input )
+		self.m_rs_textCtrl_high.Bind( wx.EVT_MOUSEWHEEL, self.rs_high_wheel )
+		self.m_rs_textCtrl_high.Bind( wx.EVT_TEXT, self.rs_high_input )
 
 	def __del__( self ):
 		pass
@@ -322,6 +374,9 @@ class MainFrame ( wx.Frame ):
 	def p_setting( self, event ):
 		event.Skip()
 
+	def a_cancel( self, event ):
+		event.Skip()
+
 	def a_search( self, event ):
 		event.Skip()
 
@@ -336,6 +391,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def a_export( self, event ):
+		event.Skip()
+
+	def ar_cancel( self, event ):
 		event.Skip()
 
 	def ar_search( self, event ):
@@ -355,6 +413,37 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def ar_export( self, event ):
+		event.Skip()
+
+	def rs_cancel( self, event ):
+		event.Skip()
+
+	def rs_search( self, event ):
+		event.Skip()
+
+
+	def rs_item_select( self, event ):
+		event.Skip()
+
+	def rs_export( self, event ):
+		event.Skip()
+
+	def rs_type_select( self, event ):
+		event.Skip()
+
+	def rs_type_wheel( self, event ):
+		event.Skip()
+
+	def rs_wide_wheel( self, event ):
+		event.Skip()
+
+	def rs_wide_input( self, event ):
+		event.Skip()
+
+	def rs_high_wheel( self, event ):
+		event.Skip()
+
+	def rs_high_input( self, event ):
 		event.Skip()
 
 

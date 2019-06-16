@@ -18,6 +18,7 @@ from core.src.structs_classes.atlas_structs import AtlasList
 from core.src.structs_classes.drop_order import DragOrderPainting, DragOrderAtlas
 from core.src.structs_classes.extract_structs import PerWorkList
 from core.src.structs_classes.group_split import ImageList
+from core.src.structs_classes.image_resize import ImageResizeList
 from core.src.thread_classes.extract_thread import RestoreThread
 from core.src.thread_classes.quick_view import QuickRestore
 
@@ -121,6 +122,31 @@ class MainFrame(Mf):
         self.m_ar_choice_type.Set(self.ar_name_group)
         self.m_ar_choice_type.SetSelection(self.ar_use_split)
 
+        """图像拉伸部分，image_resize rs"""
+        self.rs_root = self.m_rs_treeCtrl_info.AddRoot(u"")
+
+        self.rs_img_group = ImageResizeList()
+        self.rs_img_view = ImageResizeList()
+
+        self.rs_tree_type = None
+        self.rs_tree_is_single = None
+        self.rs_tree_index = None
+        self.rs_tree_target = None
+        self.rs_select_id = None
+
+        self.rs_drop = DragOrderPainting(self.rs_img_group, self.rs_img_view, self, self.m_rs_treeCtrl_info,
+                                         self.rs_root)
+        self.m_rs_treeCtrl_info.SetDropTarget(self.rs_drop)
+
+        self.rs_is_search = False
+
+        self.rs_work_type = 0
+        self.rs_value_w = 0
+        self.rs_value_h = 0
+
+        self.m_rs_choice_type.SetSelection(self.rs_work_type)
+        self.rs_type_select(None, self.rs_work_type)
+
     @staticmethod
     def run():
         """
@@ -146,16 +172,16 @@ class MainFrame(Mf):
                 dialog = wx.SingleChoiceDialog(self, "选择更改Texture文件", "选择更改文件", target.get_select(type_is))
                 if dialog.ShowModal() == wx.ID_OK:
                     index = dialog.GetSelection()
-                    id, data = target.set_tex(index)
+                    get_id, data = target.set_tex(index)
 
-                    self.m_p_treeCtrl_info.SetItemText(id, data)
+                    self.m_p_treeCtrl_info.SetItemText(get_id, data)
             else:
                 dialog = wx.SingleChoiceDialog(self, "选择更改Mesh文件", "选择更改文件", target.get_select(type_is))
                 if dialog.ShowModal() == wx.ID_OK:
                     index = dialog.GetSelection()
-                    id, data = target.set_mesh(index)
+                    get_id, data = target.set_mesh(index)
 
-                    self.m_p_treeCtrl_info.SetItemText(id, data)
+                    self.m_p_treeCtrl_info.SetItemText(get_id, data)
 
     def a_split_view(self, val):
         img = self.a_region_view_img[val]
@@ -182,6 +208,43 @@ class MainFrame(Mf):
                 self.a_region_view_img[key] = img[0]
 
             self.m_a_treeCtrl_atlas.Expand(val)
+
+    def ar_split_view(self, val):
+        img = self.ar_region_img[val]
+
+        pic, size = ImageWork.transform_image(img, self.m_bitmap_show.GetSize())
+
+        temp = wx.Bitmap.FromBufferRGBA(pic.width, pic.height, pic.tobytes())
+
+        self.m_bitmap_show.SetBitmap(temp)
+
+    def ar_split_work(self, val, target):
+        if self.ar_use_split == 0:
+            return
+        if self.ar_last_select_id is not None:
+            if val == self.ar_last_select_id:
+                return
+            else:
+                self.m_ar_treeCtrl_array.DeleteChildren(self.ar_last_select_id)
+                self.ar_region_img.clear()
+        self.ar_last_select_id = val
+
+        is_ok, img_group = ImageWork.array_split_view_builder(
+            self.ar_split_group[self.ar_use_split - 1])(target, self.m_bitmap_show.GetSize())
+        if is_ok:
+            for index in range(len(img_group)):
+                key = self.m_ar_treeCtrl_array.AppendItem(val, f'No.{index + 1}')
+                self.ar_region_img[key] = img_group[index][0]
+
+            self.m_ar_treeCtrl_array.Expand(val)
+
+    def rs_resize_view(self, target):
+        is_ok, pic = ImageWork.image_resize_view(target, self.m_bitmap_show.GetSize(),
+                                                 self.rs_work_type, self.rs_value_w, self.rs_value_h)
+        if is_ok:
+            temp = wx.Bitmap.FromBufferRGBA(pic.width, pic.height, pic.tobytes())
+
+            self.m_bitmap_show.SetBitmap(temp)
 
     # 以下为原有函数
     def restart(self):
@@ -530,14 +593,14 @@ class MainFrame(Mf):
 
                 if self.g__dialog.ShowModal() == wx.ID_OK:
                     index = self.g__dialog.GetSelection()
-                    id, data = self.a_tree_target.set_atlas(index)
+                    a_id, data = self.a_tree_target.set_atlas(index)
 
-                    self.m_a_treeCtrl_atlas.SetItemText(id, data)
+                    self.m_a_treeCtrl_atlas.SetItemText(a_id, data)
 
             else:
-                id, data = self.a_tree_target.set_atlas(self.a_tree_index)
+                a_id, data = self.a_tree_target.set_atlas(self.a_tree_index)
 
-                self.m_a_treeCtrl_atlas.SetItemText(id, data)
+                self.m_a_treeCtrl_atlas.SetItemText(a_id, data)
 
     def a_export(self, event):
         if self.a_is_search:
@@ -576,6 +639,12 @@ class MainFrame(Mf):
             self.m_a_treeCtrl_atlas.DeleteChildren(self.a_root)
             self.a_atlas_group.show_in_tree(self.m_a_treeCtrl_atlas, self.a_root)
 
+    def a_cancel(self, event):
+        self.a_atlas_view.clear()
+        self.a_is_search = False
+        self.m_a_treeCtrl_atlas.DeleteChildren(self.a_root)
+        self.a_atlas_group.show_in_tree(self.m_a_treeCtrl_atlas, self.a_root)
+
     def a_tree_select(self, event):
         """选择tree中的元素时使用"""
         type_group = ("texture2d贴图", "mesh网格", "atlas文件", "切割预览")
@@ -595,6 +664,7 @@ class MainFrame(Mf):
             self.m_staticText_info.SetLabel(f'【Atlas区】选择：{target.cn_name}')
         elif val in self.a_region_view_img.keys():
             self.a_split_view(val)
+            self.m_simplebook1.SetSelection(0)
         else:
             # 内部元素检查
             is_ok, is_single, type_is, index, target = work_on.find_in_each(val)
@@ -609,6 +679,17 @@ class MainFrame(Mf):
                 if type_is == self.data.td_region_type:
                     # 切割
                     self.a_split_work(val, target)
+                if type_is == self.data.td_atlas_type:
+                    if is_single:
+                        target_file = target.atlas_path
+                    else:
+                        target_file = target.more_atlas[index]
+                    with open(target_file, "r")as file:
+                        val = file.read().replace("\n", "\r\n")
+                        self.m_textCtrl_info.SetLabel(val)
+                        self.m_simplebook1.SetSelection(1)
+                else:
+                    self.m_simplebook1.SetSelection(0)
 
     # 阵列切割区
     def ar_export(self, event):
@@ -626,7 +707,8 @@ class MainFrame(Mf):
             temp = dialog.GetPath()
 
             if work_on.build_able().__len__() > 0:
-                self.export_all(temp, work_on, ImageWork.array_split_export_builder(self.ar_split_group[self.ar_use_split - 1]))
+                self.export_all(temp, work_on,
+                                ImageWork.array_split_export_builder(self.ar_split_group[self.ar_use_split - 1]))
 
     def ar_new_spliter(self, event):
         pass
@@ -654,6 +736,12 @@ class MainFrame(Mf):
             self.m_ar_treeCtrl_array.DeleteChildren(self.a_root)
             self.ar_img_group.show_in_tree(self.m_ar_treeCtrl_array, self.ar_root)
 
+    def ar_cancel(self, event):
+        self.ar_img_view.clear()
+        self.ar_is_search = False
+        self.m_ar_treeCtrl_array.DeleteChildren(self.a_root)
+        self.ar_img_group.show_in_tree(self.m_ar_treeCtrl_array, self.ar_root)
+
     def ar_tree_select(self, event):
         """选择tree中的元素时使用"""
         type_group = ("texture2d贴图", "mesh网格", "atlas文件", "切割预览")
@@ -673,6 +761,7 @@ class MainFrame(Mf):
             self.m_staticText_info.SetLabel(f'【阵列切割区】选择：{target.cn_name}')
         elif val in self.ar_region_img.keys():
             self.ar_split_view(val)
+            self.m_simplebook1.SetSelection(0)
         else:
             # 内部元素检查
             is_ok, is_single, type_is, index, target = work_on.find_in_each(val)
@@ -691,38 +780,171 @@ class MainFrame(Mf):
     def ar_type_change(self, event):
         self.ar_use_split = event.GetSelection()
 
+    # 图像拉伸部分
+    def rs_export(self, event):
+        if self.rs_is_search:
+            work_on = self.rs_img_view
+        else:
+            work_on = self.rs_img_group
+        title = '保存'
+        title += "-明日方舟"
+
+        address = os.getcwd()
+        dialog = wx.DirDialog(self, title, address, style=wx.DD_DEFAULT_STYLE | wx.DD_NEW_DIR_BUTTON)
+
+        if dialog.ShowModal() == wx.ID_OK:
+            temp = dialog.GetPath()
+
+            if work_on.build_able().__len__() > 0:
+                self.export_all(temp, work_on,
+                                ImageWork.image_resize_export_builder(self.rs_work_type, self.rs_value_w,
+                                                                      self.rs_value_h))
+
+    def rs_high_input(self, event):
+        val = event.GetString()
+        pattern = re.compile(r'^\d+$')
+        match = pattern.match(val)
+        if match is not None:
+            self.rs_value_h = int(val)
+        else:
+            self.m_rs_textCtrl_high.SetLabel(str(self.rs_value_h))
+        self.rs_resize_view(self.rs_tree_target)
+
+    def rs_high_wheel(self, event):
+        degree = event.GetWheelRotation()
+        if degree > 0:
+            self.m_rs_textCtrl_high.SetLabel(str(self.rs_value_h - 1))
+        else:
+            self.m_rs_textCtrl_high.SetLabel(str(self.rs_value_h + 1))
+
+    def rs_wide_input(self, event):
+        val = event.GetString()
+        pattern = re.compile(r'^\d+$')
+        match = pattern.match(val)
+        if match is not None:
+            self.rs_value_w = int(val)
+        else:
+            self.m_rs_textCtrl_wide.SetLabel(str(self.rs_value_w))
+        self.rs_resize_view(self.rs_tree_target)
+
+    def rs_wide_wheel(self, event):
+        degree = event.GetWheelRotation()
+        if degree > 0:
+            self.m_rs_textCtrl_wide.SetLabel(str(self.rs_value_w - 1))
+        else:
+            self.m_rs_textCtrl_wide.SetLabel(str(self.rs_value_w + 1))
+
+    def rs_item_select(self, event):
+        """选择tree中的元素时使用"""
+        type_group = ("texture2d贴图", "mesh网格", "atlas文件", "切割预览", "拉伸预览")
+        if self.ar_is_search:
+            work_on = self.rs_img_view
+        else:
+            work_on = self.rs_img_group
+
+        val = event.GetItem()
+        self.rs_select_id = val
+
+        # 第一步，检测单独元素选择
+        is_ok, target = work_on.find_by_id(val)
+        if is_ok:
+            self.rs_tree_target = target
+
+            self.m_staticText_info.SetLabel(f'【图像拉伸区】选择：{target.cn_name}')
+        else:
+            # 内部元素检查
+            is_ok, is_single, type_is, index, target = work_on.find_in_each(val)
+            if is_ok:
+                self.rs_tree_is_single = is_single
+                self.rs_tree_type = type_is
+                self.rs_tree_index = index
+                self.rs_tree_target = target
+
+                self.m_staticText_info.SetLabel(f'【图像拉伸区】选择：{target.cn_name}中的{type_group[type_is]},单个为{is_single}')
+
+                if type_is == self.data.td_view_type:
+                    # 拉伸
+                    self.rs_resize_view(target)
+
+    def rs_search(self, event):
+        value = event.GetString()
+        if value != r"^.*$":
+            try:
+                indexes = SearchOrder.find(value, self.rs_img_group.build_search(), is_regex=True,
+                                           is_inverse=False)
+                self.rs_img_view = self.rs_img_group.build_from_indexes(indexes)
+
+                self.rs_is_search = True
+
+                self.m_rs_treeCtrl_info.DeleteChildren(self.rs_root)
+                self.rs_img_view.show_in_tree(self.m_rs_treeCtrl_info, self.rs_root)
+            except re.error as info:
+                self.m_staticText_info.SetLabel(f"非法的正则表达式！ 为{value},错误：{info}")
+        else:
+            self.rs_img_view.clear()
+            self.rs_is_search = False
+            self.m_rs_treeCtrl_info.DeleteChildren(self.rs_root)
+            self.rs_img_group.show_in_tree(self.m_rs_treeCtrl_info, self.rs_root)
+
+    def rs_cancel(self, event):
+        self.rs_img_view.clear()
+        self.rs_is_search = False
+        self.m_rs_treeCtrl_info.DeleteChildren(self.rs_root)
+        self.rs_img_group.show_in_tree(self.m_rs_treeCtrl_info, self.rs_root)
+
+    def rs_type_select(self, event, select=0):
+        if event is None:
+            val = select
+        else:
+            val = event.GetSelection()
+        self.rs_work_type = val
+        if val == self.data.irt_default:
+            self.m_rs_textCtrl_high.SetLabel("9")
+            self.m_rs_textCtrl_wide.SetLabel("16")
+            self.m_rs_staticText_type.SetLabel(":")
+            self.m_rs_textCtrl_high.Enable(False)
+            self.m_rs_textCtrl_wide.Enable(False)
+
+        else:
+            self.m_rs_textCtrl_high.Enable(True)
+            self.m_rs_textCtrl_wide.Enable(True)
+
+            if val == self.data.irt_scale:
+                self.m_rs_textCtrl_high.SetLabel(f"9")
+                self.m_rs_textCtrl_wide.SetLabel(f"16")
+                self.m_rs_staticText_type.SetLabel(":")
+
+            elif val == self.data.irt_resize:
+                self.m_rs_textCtrl_high.SetLabel(f"1024")
+                self.m_rs_textCtrl_wide.SetLabel("1920")
+                self.m_rs_staticText_type.SetLabel("X")
+
+        self.rs_resize_view(self.rs_tree_target)
+
+    def rs_type_wheel(self, event):
+        if event.GetWheelRotation() >= 0:
+            add = -1
+        else:
+            add = 1
+
+        if (self.rs_work_type == 3 and add > 0) or (self.rs_work_type == 0 and add < 0):
+            return
+        else:
+            self.rs_work_type += add
+            self.m_rs_choice_type.SetSelection(self.rs_work_type)
+
+        self.rs_type_select(None, self.rs_work_type)
+
     def exit(self, event=None):
         self.p_enter_exit = True
         self.m_p_treeCtrl_info.DeleteChildren(self.p_root)
         self.m_p_treeCtrl_info.Destroy()
+        self.m_a_treeCtrl_atlas.DeleteChildren(self.a_root)
+        self.m_a_treeCtrl_atlas.Destroy()
+        self.m_ar_treeCtrl_array.DeleteChildren(self.ar_root)
+        self.m_ar_treeCtrl_array.Destroy()
+        self.m_rs_treeCtrl_info.DeleteChildren(self.rs_root)
+        self.m_rs_treeCtrl_info.Destroy()
+
         self.Destroy()
         sys.exit()
-
-    def ar_split_view(self, val):
-        img = self.ar_region_img[val]
-
-        pic, size = ImageWork.transform_image(img, self.m_bitmap_show.GetSize())
-
-        temp = wx.Bitmap.FromBufferRGBA(pic.width, pic.height, pic.tobytes())
-
-        self.m_bitmap_show.SetBitmap(temp)
-
-    def ar_split_work(self, val, target):
-        if self.ar_use_split == 0:
-            return
-        if self.ar_last_select_id is not None:
-            if val == self.ar_last_select_id:
-                return
-            else:
-                self.m_ar_treeCtrl_array.DeleteChildren(self.ar_last_select_id)
-                self.ar_region_img.clear()
-        self.ar_last_select_id = val
-
-        is_ok, img_group = ImageWork.array_split_view_builder(self.ar_split_group[self.ar_use_split - 1]) \
-            (target, self.m_bitmap_show.GetSize())
-        if is_ok:
-            for index in range(len(img_group)):
-                key = self.m_ar_treeCtrl_array.AppendItem(val, f'No.{index + 1}')
-                self.ar_region_img[key] = img_group[index][0]
-
-            self.m_ar_treeCtrl_array.Expand(val)

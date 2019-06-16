@@ -15,8 +15,6 @@ class GlobalData:
     def fi_mesh_type(self):
         return 2
 
-
-
     # td tree id find
     @property
     def td_list_item(self):
@@ -41,6 +39,10 @@ class GlobalData:
     @property
     def td_region_type(self):
         return 3
+
+    @property
+    def td_view_type(self):
+        return 4
 
     # tree_filter
     @property
@@ -291,3 +293,16 @@ class GlobalData:
     @property
     def sk_regex_search(self):
         return "regex_search"
+
+    # image resize type:irt
+    @property
+    def irt_default(self):
+        return 0
+
+    @property
+    def irt_scale(self):
+        return 1
+
+    @property
+    def irt_resize(self):
+        return 2

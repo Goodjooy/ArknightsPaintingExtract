@@ -65,7 +65,8 @@ class FileFilter(object):
             if not len(paths) == 0:
 
                 path = filter(lambda x: pattern_re.match(
-                    re.sub(r'\s#\d+?(?=\.(?:png|obj|txt))', "", os.path.basename(x), flags=re.IGNORECASE)) is not None, paths)
+                    re.sub(r'\s#\d+?(?=\.(?:png|obj|txt))', "", os.path.basename(x), flags=re.IGNORECASE)) is not None,
+                              paths)
                 path = list(path)
 
                 info_write2 = info_write_builder(is_file, dict_path, replace_str, info_list,

@@ -43,6 +43,9 @@ class PerInfo(BasicInfo):
         else:
             return False
 
+    def __bool__(self):
+        return self.is_able_work
+
     @property
     def tex_path(self):
         return self._tex_path
@@ -162,6 +165,22 @@ class PerInfo(BasicInfo):
 
         return os.path.isfile(val.tex_path), val
 
+    def is_inside_id(self, id):
+        val = id == self.tex_id == id or id in self.more_tex_per_id or self.mesh_id == id or \
+              id in self.more_mesh_per_id
+
+        return val
+
+    def find_sub_key(self, id):
+        if id == self.tex_id:
+            return True, self.data.td_single, self.data.td_texture_type, 0, self
+        elif id == self.mesh_id:
+            return True, self.data.td_single, self.data.td_mesh_type, 0, self
+        elif id in self.more_tex_per_id:
+            return True, self.data.td_list_item, self.data.td_texture_type, self.more_tex_per_id.index(id), self
+        elif id in self.more_mesh_per_id:
+            return True, self.data.td_list_item, self.data.td_mesh_type, self.more_mesh_per_id.index(id), self
+
 
 class PerWorkList(BasicInfoList):
     def __init__(self, item: collections.abc.Iterable = None):
@@ -188,29 +207,24 @@ class PerWorkList(BasicInfoList):
             return False, None
         return True, self[values[0]]
 
-    def find_in_each(self, id) -> (bool, bool, bool, int, PerInfo):
+    def find_in_each(self, id) -> (bool, bool, int, int, PerInfo):
         """
 
         :param id:
-        :return: (是否成功，类型【单个True，列表False】，类型[tex(True),mesh(False)]，索引，对象本身)
+        :return: (是否成功，类型【单个True，列表False】，类型，索引，对象本身)
         """
         target = None
         for value in self:
-            if id == value.tex_id == id or id in value.more_tex_per_id or value.mesh_id == id or \
-                    id in value.more_mesh_per_id:
+            if value.is_inside_id(id):
                 target = value
+                break
         if target is None:
             return False, False, False, -1, None
-        if id == target.tex_id:
-            return True, self.data.td_single, self.data.td_texture_type, 0, target
-        elif id == target.mesh_id:
-            return True, self.data.td_single, self.data.td_mesh_type, 0, target
-        elif id in target.more_tex_per_id:
-            return True, self.data.td_list_item, self.data.td_texture_type, target.more_tex_per_id.index(id), target
-        elif id in target.more_mesh_per_id:
-            return True, self.data.td_list_item, self.data.td_mesh_type, target.more_mesh_per_id.index(id), target
+        else:
+            return target.find_sub_key(id)
 
-    # 添加部分
+            # 添加部分
+
     def set_tex(self, value, name=None):
         """
         添加贴图

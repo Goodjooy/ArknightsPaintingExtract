@@ -1,5 +1,10 @@
 import os
 import re
+from tkinter.messagebox import showinfo
+
+showinfo("lala", "lala")
+
+from core.src.structs_classes.atlas_structs import PerAtlas
 
 if __name__ == '__main__' and False:
     size_w = 182
@@ -26,10 +31,14 @@ if __name__ == '__main__' and False:
             img_list.append(value)
             value.save(f"{save}\\{val_x}+{val_y}.png")
 
-if __name__ == '__main__':
+if __name__ == '__main__' and False:
     B = re.compile(r'{(\d+)}')
     string = "{1}char_285_medic2{0}{1}{1}"
 
     A = B.findall(string)
     print(A)
     print(type(A))
+
+if __name__ == '__main__':
+    val = PerAtlas("aa", "cc", False)
+    print(...)

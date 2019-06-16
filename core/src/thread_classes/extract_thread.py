@@ -2,6 +2,7 @@ import os
 import re
 import shutil
 import threading
+from collections import Callable
 
 from core.src.frame_classes.design_frame import MainFrame
 from core.src.static_classes.image_deal import ImageWork
@@ -12,9 +13,10 @@ from core.src.structs_classes.extract_structs import PerInfo, PerWorkList
 class RestoreThread(threading.Thread):
 
     def __init__(self, id_thread, name, able: PerWorkList, unable: PerWorkList, parent: MainFrame, setting,
-                 names, save_path):
+                 names, save_path, work_func=ImageWork.restore_tool):
         threading.Thread.__init__(self)
 
+        self.work_func = work_func
         self.names = names
         self.setting = setting
         self.format = parent
@@ -102,7 +104,7 @@ class RestoreThread(threading.Thread):
 
                 now_info.add_save(save_path)
 
-                is_good, info = ImageWork.restore_tool(now_info)
+                is_good, info = self.work_func(now_info)
                 if not is_good:
                     self.format.m_staticText_info.SetLabel(info)
 
@@ -156,3 +158,14 @@ class RestoreThread(threading.Thread):
     def update_value(self, able, unable):
         self.able = able
         self.unable = unable
+
+    @property
+    def work_function(self):
+        return self.work_func
+
+    @work_function.setter
+    def work_function(self, val):
+        if isinstance(val, Callable):
+            self.work_func = val
+        else:
+            raise TypeError(f'type:{type(val)} is not callable! ')

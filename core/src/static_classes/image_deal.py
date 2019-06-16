@@ -1,12 +1,17 @@
+import json
 import os
+import re
 from functools import reduce
+from imghdr import what
 
 import PIL.Image
 from re import match, split
 
 import numpy
 
+from core.src.structs_classes.atlas_structs import PerAtlas
 from core.src.structs_classes.extract_structs import PerInfo
+from core.src.structs_classes.group_split import PerImage
 
 
 class ImageWork(object):
@@ -152,32 +157,200 @@ class ImageWork(object):
         pic.save(save_as)
 
     @staticmethod
-    def restore_tool_no_save(mesh_path, pic_path, size: tuple):
-        """拼图用的函数"""
-        pic = ImageWork.deal_mrfz(mesh_path, pic_path)
+    def transform_image(pic, size):
+        size = tuple(size)
         pic_size = pic.size
         bg = PIL.Image.new("RGBA", size, (255, 255, 255, 0))
 
         scale = min(bg.size[0] / pic.size[0], bg.size[1] / pic.size[1])
         size = (round(pic.size[0] * scale), round(pic.size[1] * scale))
 
-        pic = pic.resize(size, PIL.Image.ANTIALIAS)
+        if pic_size[0] <= size[0] and pic_size[1] <= size[1]:
+            pic = pic
+        else:
+            pic = pic.resize(size, PIL.Image.ANTIALIAS)
+
         x = round(bg.size[0] / 2 - pic.size[0] / 2)
         y = round(bg.size[1] / 2 - pic.size[1] / 2)
         bg.paste(pic, (x, y, x + pic.size[0], y + pic.size[1]))
         return bg, pic_size
 
     @staticmethod
+    def restore_tool_no_save(mesh_path, pic_path, size: tuple):
+        """拼图用的函数"""
+        pic = ImageWork.deal_mrfz(mesh_path, pic_path)
+
+        return ImageWork.transform_image(pic, size)
+
+    @staticmethod
     def pic_transform(path, size):
         pic = PIL.Image.open(path)
-        pic_size = pic.size
-        bg = PIL.Image.new("RGBA", size, (255, 255, 255, 0))
 
-        scale = min(bg.size[0] / pic.size[0], bg.size[1] / pic.size[1])
-        size = (round(pic.size[0] * scale), round(pic.size[1] * scale))
+        return ImageWork.transform_image(pic, size)
 
-        pic = pic.resize(size, PIL.Image.ANTIALIAS)
-        x = round(bg.size[0] / 2 - pic.size[0] / 2)
-        y = round(bg.size[1] / 2 - pic.size[1] / 2)
-        bg.paste(pic, (x, y, x + pic.size[0], y + pic.size[1]))
-        return bg, pic_size
+    """atlas part"""
+
+    @staticmethod
+    def atlas_split_main(img, atlas_file):
+        info_pattern = re.compile(r'(.+)\n'
+                                  r'\s{2}rotate:\s(false|true)\n'
+                                  r'\s{2}xy:\s(\d+),\s(\d+)\n'
+                                  r'\s{2}size:\s(\d+),\s(\d+)\n'
+                                  r'\s{2}orig:\s\d+,\s\d+\n'
+                                  r'\s{2}offset:\s0,\s0\n'
+                                  r'\s{2}index:\s-1')
+        group = {}
+
+        # 加载分割文件
+        with open(atlas_file, 'r', encoding="utf-8")as files:
+            file_work = files.read()
+
+        info = info_pattern.findall(file_work)
+
+        for body in info:
+            mod_name = body[0]
+            group[mod_name] = {}
+            group[mod_name]['rotate'] = json.loads(body[1])
+            group[mod_name]['xy'] = [int(body[2]), int(body[3])]
+            group[mod_name]['size'] = [int(body[4]), int(body[5])]
+
+        values = {}
+        for var in group.keys():
+
+            xy = group[var]['xy']
+            size = group[var]['size']
+
+            if group[var]['rotate']:
+                rect = (xy[0], xy[1], size[1] + xy[0], size[0] + xy[1])
+            else:
+                rect = (xy[0], xy[1], size[0] + xy[0], size[1] + xy[1])
+
+            val = img.crop(rect)
+            if group[var]['rotate']:
+                val = val.rotate(-90, expand=True)
+
+            values[var] = val
+
+        return values
+
+    @staticmethod
+    def atlas_split_export(value: PerAtlas):
+        try:
+            if value.is_need_work():
+                work_image = ImageWork.deal_mrfz(value.mesh_path, value.tex_path)
+            else:
+                work_image = PIL.Image.open(value.tex_path)
+            img_group = ImageWork.atlas_split_main(work_image, value.atlas_path)
+
+            os.makedirs(value.save_path, exist_ok=True)
+
+            for key in img_group.keys():
+                img_group[key].save(os.path.join(value.save_path, key + ".png"))
+
+        except Exception as info:
+            return False, str(info)
+        else:
+            return True, "successfully"
+
+    @staticmethod
+    def atlas_split_view(value: PerAtlas, size):
+
+        try:
+            if value.is_need_work():
+                work_image = ImageWork.deal_mrfz(value.mesh_path, value.tex_path)
+            else:
+                work_image = PIL.Image.open(value.tex_path)
+            img_group = ImageWork.atlas_split_main(work_image, value.atlas_path)
+
+            for key in img_group.keys():
+                img_group[key] = ImageWork.transform_image(img_group[key], size)
+
+        except Exception as info:
+            return False, info
+        else:
+            return True, img_group
+
+    """矩阵切割部分"""
+
+    @staticmethod
+    def array_split_main(img, val_x, val_y, size_w, size_h, size, inside):
+        value = img.crop(
+            [(val_x - 1) * size_w,
+             size[1] - val_y * size_h,
+             val_x * size_w,
+             size[1] - (val_y - 1) * size_h
+             ])
+        value = value.crop([inside, inside, size_w - inside, size_h - inside])
+
+        return value
+
+    @staticmethod
+    def array_split_build_list_builder(split_guider: dict = ...):
+        def array_split_build_list(value: PerImage, ):
+            if isinstance(split_guider, dict):
+                if value.is_need_work():
+                    img = ImageWork.deal_mrfz(value.mesh_path, value.tex_path)
+                else:
+                    img = PIL.Image.open(value.tex_path)
+                img_list = []
+                size = img.size
+                size_w = split_guider["size_w"]
+                size_h = split_guider["size_h"]
+                inside = split_guider["inside"]
+
+                value_y = int(img.height / size_h)
+                value_x = int(img.width / size_w)
+
+                for val_x in range(1, value_x + 1):
+                    for val_y in range(1, value_y + 1):
+                        value = ImageWork.array_split_main(img, val_x, val_y, size_w, size_h, size, inside)
+                        img_list.append(value)
+
+                return img_list
+
+        return array_split_build_list
+
+    @staticmethod
+    def array_quick_view_single(img, val_x, val_y, size_w, size_h, inside, s_size):
+        size = img.size
+
+        val = ImageWork.array_split_main(img, val_x, val_y, size_w, size_h, size, inside)
+
+        val, size = ImageWork.transform_image(val, s_size)
+
+        return val
+
+    @staticmethod
+    def array_split_view_builder(split_guider: dict = ...):
+        def view(value, size):
+            try:
+                val_list = ImageWork.array_split_build_list_builder(split_guider)(value)
+                re_val = []
+                for val in val_list:
+                    re_val.append(ImageWork.transform_image(val, size))
+
+                return True, re_val
+            except Exception:
+                return False, None
+
+        return view
+
+    @staticmethod
+    def array_split_export_builder(split_guider: dict = ...):
+        def export(value: PerImage):
+            try:
+                val_list = ImageWork.array_split_build_list_builder(split_guider)(value)
+
+                path = value.save_path
+
+                os.makedirs(path, exist_ok=True)
+
+                for index in range(len(val_list)):
+                    val = val_list[index]
+                    val.save(os.path.join(path, f"{index}.png"))
+            except Exception as info:
+                return False, info
+            else:
+                return True, "successfully"
+
+        return export

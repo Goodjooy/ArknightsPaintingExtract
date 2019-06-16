@@ -8,12 +8,14 @@ class GlobalData:
         return 1
 
     @property
-    def fi_alpha_type(self):
-        return 2
+    def fi_atlas_type(self):
+        return 3
 
     @property
     def fi_mesh_type(self):
         return 2
+
+
 
     # td tree id find
     @property
@@ -26,11 +28,19 @@ class GlobalData:
 
     @property
     def td_texture_type(self):
-        return True
+        return 0
 
     @property
     def td_mesh_type(self):
-        return False
+        return 1
+
+    @property
+    def td_atlas_type(self):
+        return 2
+
+    @property
+    def td_region_type(self):
+        return 3
 
     # tree_filter
     @property

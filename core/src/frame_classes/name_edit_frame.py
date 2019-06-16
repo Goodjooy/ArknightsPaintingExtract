@@ -6,4 +6,4 @@ class NameEditFrame(MyDialogNames):
         super(NameEditFrame, self).__init__(parent)
         self.parent = parent
 
-        self.pattern=r"^(enemy|char|build_char|npc)_([0-9]{3,4})_(.+?)(?=$|_)_?(.+)?$"
+        self.pattern = r"^(enemy|char|build_char|npc)_([0-9]{3,4})_(.+?)(?=$|_)_?(.+)?$"

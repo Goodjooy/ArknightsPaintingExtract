@@ -4,6 +4,7 @@ import os
 import wx
 
 from core.src.frame_classes.design_frame import MyDialogSetting
+from core.src.frame_classes.handle_split import HandleSplit
 from core.src.frame_classes.name_edit_frame import NameEditFrame
 from core.src.static_classes.image_deal import ImageWork
 from core.src.static_classes.static_data import GlobalData
@@ -108,6 +109,11 @@ class Setting(MyDialogSetting):
 
     def apply_press(self, event):
         self.save_info()
+
+    def handle_work(self, event):
+        dialog = HandleSplit(self)
+
+        dialog.ShowModal()
 
     def get_setting(self):
         return self.setting

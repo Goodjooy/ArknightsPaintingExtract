@@ -23,7 +23,7 @@ class QuickRestore(threading.Thread):
 
     def run(self):
         try:
-            size = tuple(self.father.m_scrolledWindow2.GetSize())
+            size = tuple(self.father.m_panel9.GetSize())
             if self.info.is_able_work:
                 pic, pic_size = ImageWork.restore_tool_no_save(self.info.mesh_path, self.info.tex_path, size)
                 info_str = f"可还原立绘预览：{self.info.cn_name}；尺寸：{pic_size}"

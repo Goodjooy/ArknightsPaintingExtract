@@ -88,7 +88,7 @@ class MainFrame ( wx.Frame ):
 		self.m_panel_painting.SetSizer( bSizer3 )
 		self.m_panel_painting.Layout()
 		bSizer3.Fit( self.m_panel_painting )
-		self.m_notebook_work_type.AddPage( self.m_panel_painting, u"立绘还原", False )
+		self.m_notebook_work_type.AddPage( self.m_panel_painting, u"立绘还原", True )
 		self.m_panel5 = wx.Panel( self.m_notebook_work_type, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer27 = wx.BoxSizer( wx.VERTICAL )
 
@@ -233,7 +233,7 @@ class MainFrame ( wx.Frame ):
 		self.m_panel7.SetSizer( bSizer272 )
 		self.m_panel7.Layout()
 		bSizer272.Fit( self.m_panel7 )
-		self.m_notebook_work_type.AddPage( self.m_panel7, u"图片拉伸", True )
+		self.m_notebook_work_type.AddPage( self.m_panel7, u"图片拉伸", False )
 
 		bSizer43.Add( self.m_notebook_work_type, 1, wx.EXPAND |wx.ALL, 5 )
 
@@ -545,8 +545,8 @@ class MyDialogSetting ( wx.Dialog ):
 		self.m_staticline13 = wx.StaticLine( self.m_panel3, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL|wx.LI_VERTICAL )
 		bSizer12.Add( self.m_staticline13, 0, wx.EXPAND |wx.ALL, 5 )
 
-		self.m_colourPicker_view_color = wx.ColourPickerCtrl( self.m_panel3, wx.ID_ANY, wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ), wx.DefaultPosition, wx.DefaultSize, wx.CLRP_SHOW_LABEL )
-		bSizer12.Add( self.m_colourPicker_view_color, 1, wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_VERTICAL, 5 )
+		self.m_button_handle = wx.Button( self.m_panel3, wx.ID_ANY, u"手动切割器", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer12.Add( self.m_button_handle, 1, wx.ALL|wx.EXPAND, 5 )
 
 
 		bSizer11.Add( bSizer12, 0, wx.EXPAND, 5 )
@@ -583,6 +583,7 @@ class MyDialogSetting ( wx.Dialog ):
 		# Connect Events
 		self.Bind( wx.EVT_INIT_DIALOG, self.set_info )
 		self.m_button_name_defind.Bind( wx.EVT_BUTTON, self.open_name_defined )
+		self.m_button_handle.Bind( wx.EVT_BUTTON, self.handle_work )
 		self.m_sdbSizer1Apply.Bind( wx.EVT_BUTTON, self.apply_press )
 		self.m_sdbSizer1Cancel.Bind( wx.EVT_BUTTON, self.cancel_press )
 		self.m_sdbSizer1OK.Bind( wx.EVT_BUTTON, self.ok_press )
@@ -596,6 +597,9 @@ class MyDialogSetting ( wx.Dialog ):
 		event.Skip()
 
 	def open_name_defined( self, event ):
+		event.Skip()
+
+	def handle_work( self, event ):
 		event.Skip()
 
 	def apply_press( self, event ):
@@ -1217,6 +1221,253 @@ class MyDialogNames ( wx.Dialog ):
 		event.Skip()
 
 	def ok_press( self, event ):
+		event.Skip()
+
+
+###########################################################################
+## Class MyDialogHandleSplit
+###########################################################################
+
+class MyDialogHandleSplit ( wx.Dialog ):
+
+	def __init__( self, parent ):
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"手动切割", pos = wx.DefaultPosition, size = wx.Size( 982,569 ), style = wx.DEFAULT_DIALOG_STYLE )
+
+		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
+
+		bSizer42 = wx.BoxSizer( wx.VERTICAL )
+
+		bSizer43 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_scrolledWindow3 = wx.ScrolledWindow( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL|wx.VSCROLL )
+		self.m_scrolledWindow3.SetScrollRate( 5, 5 )
+		bSizer48 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_bitmap_view_img = wx.StaticBitmap( self.m_scrolledWindow3, wx.ID_ANY, wx.ArtProvider.GetBitmap( wx.ART_MISSING_IMAGE, wx.ART_OTHER ), wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer48.Add( self.m_bitmap_view_img, 1, wx.ALL|wx.EXPAND, 5 )
+
+
+		self.m_scrolledWindow3.SetSizer( bSizer48 )
+		self.m_scrolledWindow3.Layout()
+		bSizer48.Fit( self.m_scrolledWindow3 )
+		bSizer43.Add( self.m_scrolledWindow3, 1, wx.EXPAND |wx.ALL, 5 )
+
+		self.m_staticline42 = wx.StaticLine( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
+		bSizer43.Add( self.m_staticline42, 0, wx.EXPAND |wx.ALL, 5 )
+
+		bSizer45 = wx.BoxSizer( wx.VERTICAL )
+
+		bSizer45.SetMinSize( wx.Size( 300,-1 ) )
+		bSizer47 = wx.BoxSizer( wx.HORIZONTAL )
+
+		bSizer46 = wx.BoxSizer( wx.VERTICAL )
+
+		self.m_staticText21 = wx.StaticText( self, wx.ID_ANY, u"左下角水平坐标", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText21.Wrap( -1 )
+
+		bSizer46.Add( self.m_staticText21, 0, wx.ALL, 5 )
+
+		self.m_textCtrl_left = wx.TextCtrl( self, wx.ID_ANY, u"0", wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER|wx.TE_PROCESS_ENTER )
+		self.m_textCtrl_left.SetMinSize( wx.Size( 0,-1 ) )
+
+		bSizer46.Add( self.m_textCtrl_left, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_staticText22 = wx.StaticText( self, wx.ID_ANY, u"左下角竖直坐标", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText22.Wrap( -1 )
+
+		bSizer46.Add( self.m_staticText22, 0, wx.ALL, 5 )
+
+		self.m_textCtrl_botton = wx.TextCtrl( self, wx.ID_ANY, u"0", wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER )
+		bSizer46.Add( self.m_textCtrl_botton, 0, wx.ALL, 5 )
+
+		self.m_staticText23 = wx.StaticText( self, wx.ID_ANY, u"切割宽度", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText23.Wrap( -1 )
+
+		bSizer46.Add( self.m_staticText23, 0, wx.ALL, 5 )
+
+		self.m_textCtrl_wieth = wx.TextCtrl( self, wx.ID_ANY, u"0", wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER )
+		bSizer46.Add( self.m_textCtrl_wieth, 0, wx.ALL, 5 )
+
+		self.m_staticText24 = wx.StaticText( self, wx.ID_ANY, u"切割高度", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText24.Wrap( -1 )
+
+		bSizer46.Add( self.m_staticText24, 0, wx.ALL, 5 )
+
+		self.m_textCtrl_height = wx.TextCtrl( self, wx.ID_ANY, u"124", wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER|wx.TE_PROCESS_ENTER )
+		bSizer46.Add( self.m_textCtrl_height, 0, wx.ALL, 5 )
+
+
+		bSizer47.Add( bSizer46, 0, wx.EXPAND, 5 )
+
+		self.m_staticline44 = wx.StaticLine( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL|wx.LI_VERTICAL )
+		bSizer47.Add( self.m_staticline44, 0, wx.EXPAND |wx.ALL, 5 )
+
+		bSizer49 = wx.BoxSizer( wx.VERTICAL )
+
+		bSizer501 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_bpButton13 = wx.BitmapButton( self, wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
+
+		self.m_bpButton13.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_PLUS, wx.ART_BUTTON ) )
+		bSizer501.Add( self.m_bpButton13, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+		self.m_bpButton14 = wx.BitmapButton( self, wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
+
+		self.m_bpButton14.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_MINUS, wx.ART_BUTTON ) )
+		bSizer501.Add( self.m_bpButton14, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+		self.m_bpButton15 = wx.BitmapButton( self, wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, wx.BU_AUTODRAW|0 )
+
+		self.m_bpButton15.SetBitmap( wx.ArtProvider.GetBitmap( wx.ART_FILE_SAVE, wx.ART_BUTTON ) )
+		bSizer501.Add( self.m_bpButton15, 0, wx.ALL, 5 )
+
+
+		bSizer49.Add( bSizer501, 0, 0, 5 )
+
+		m_listBox4Choices = []
+		self.m_listBox4 = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_listBox4Choices, 0 )
+		bSizer49.Add( self.m_listBox4, 1, wx.ALL|wx.EXPAND, 5 )
+
+
+		bSizer47.Add( bSizer49, 1, wx.EXPAND, 5 )
+
+
+		bSizer45.Add( bSizer47, 1, wx.EXPAND, 5 )
+
+		self.m_staticline43 = wx.StaticLine( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		bSizer45.Add( self.m_staticline43, 0, wx.EXPAND |wx.ALL, 5 )
+
+		self.m_bitmap_region = wx.StaticBitmap( self, wx.ID_ANY, wx.ArtProvider.GetBitmap( wx.ART_MISSING_IMAGE, wx.ART_OTHER ), wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer45.Add( self.m_bitmap_region, 1, wx.ALL|wx.EXPAND, 5 )
+
+
+		bSizer43.Add( bSizer45, 0, wx.EXPAND, 5 )
+
+
+		bSizer42.Add( bSizer43, 1, wx.EXPAND, 5 )
+
+		self.m_staticline48 = wx.StaticLine( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		bSizer42.Add( self.m_staticline48, 0, wx.EXPAND |wx.ALL, 5 )
+
+		bSizer50 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_staticText_info = wx.StaticText( self, wx.ID_ANY, u"Crayonkun可是公共肉便器呢", wx.DefaultPosition, wx.DefaultSize, wx.ST_ELLIPSIZE_END )
+		self.m_staticText_info.Wrap( -1 )
+
+		bSizer50.Add( self.m_staticText_info, 1, wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+		self.m_gauge_val = wx.Gauge( self, wx.ID_ANY, 100, wx.DefaultPosition, wx.DefaultSize, wx.GA_HORIZONTAL )
+		self.m_gauge_val.SetValue( 0 )
+		bSizer50.Add( self.m_gauge_val, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+		self.m_staticline46 = wx.StaticLine( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
+		bSizer50.Add( self.m_staticline46, 0, wx.EXPAND |wx.ALL, 5 )
+
+		self.m_staticText25 = wx.StaticText( self, wx.ID_ANY, u"步长", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText25.Wrap( -1 )
+
+		bSizer50.Add( self.m_staticText25, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+		m_comboBox_stepChoices = [ u"1", u"25", u"500" ]
+		self.m_comboBox_step = wx.ComboBox( self, wx.ID_ANY, u"124", wx.DefaultPosition, wx.DefaultSize, m_comboBox_stepChoices, wx.CB_DROPDOWN )
+		self.m_comboBox_step.SetSelection( 1 )
+		self.m_comboBox_step.SetMinSize( wx.Size( 100,-1 ) )
+		self.m_comboBox_step.SetMaxSize( wx.Size( 100,-1 ) )
+
+		bSizer50.Add( self.m_comboBox_step, 0, wx.ALL|wx.EXPAND, 5 )
+
+
+		bSizer42.Add( bSizer50, 0, wx.EXPAND, 5 )
+
+		self.m_staticline49 = wx.StaticLine( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		bSizer42.Add( self.m_staticline49, 0, wx.EXPAND |wx.ALL, 5 )
+
+		m_sdbSizer_save = wx.StdDialogButtonSizer()
+		self.m_sdbSizer_saveSave = wx.Button( self, wx.ID_SAVE )
+		m_sdbSizer_save.AddButton( self.m_sdbSizer_saveSave )
+		m_sdbSizer_save.Realize();
+
+		bSizer42.Add( m_sdbSizer_save, 0, wx.EXPAND, 5 )
+
+
+		self.SetSizer( bSizer42 )
+		self.Layout()
+
+		self.Centre( wx.BOTH )
+
+		# Connect Events
+		self.m_textCtrl_left.Bind( wx.EVT_MOUSEWHEEL, self.wheel_x )
+		self.m_textCtrl_left.Bind( wx.EVT_TEXT, self.enter_x )
+		self.m_textCtrl_botton.Bind( wx.EVT_MOUSEWHEEL, self.wheel_y )
+		self.m_textCtrl_botton.Bind( wx.EVT_TEXT, self.enter_y )
+		self.m_textCtrl_wieth.Bind( wx.EVT_MOUSEWHEEL, self.wheel_w )
+		self.m_textCtrl_wieth.Bind( wx.EVT_TEXT, self.enter_width )
+		self.m_textCtrl_height.Bind( wx.EVT_MOUSEWHEEL, self.wheel_h )
+		self.m_textCtrl_height.Bind( wx.EVT_TEXT, self.enter_height )
+		self.m_bpButton13.Bind( wx.EVT_BUTTON, self.add_region )
+		self.m_bpButton14.Bind( wx.EVT_BUTTON, self.del_region )
+		self.m_bpButton15.Bind( wx.EVT_BUTTON, self.save )
+		self.m_listBox4.Bind( wx.EVT_LISTBOX, self.select_region )
+		self.m_bitmap_region.Bind( wx.EVT_LEFT_DCLICK, self.view_in_main )
+		self.m_bitmap_region.Bind( wx.EVT_MOUSEWHEEL, self.wheel_region )
+		self.m_comboBox_step.Bind( wx.EVT_MOUSEWHEEL, self.step_wheel )
+		self.m_comboBox_step.Bind( wx.EVT_TEXT, self.step_len )
+		self.m_sdbSizer_saveSave.Bind( wx.EVT_BUTTON, self.save_exit )
+
+	def __del__( self ):
+		pass
+
+
+	# Virtual event handlers, overide them in your derived class
+	def wheel_x( self, event ):
+		event.Skip()
+
+	def enter_x( self, event ):
+		event.Skip()
+
+	def wheel_y( self, event ):
+		event.Skip()
+
+	def enter_y( self, event ):
+		event.Skip()
+
+	def wheel_w( self, event ):
+		event.Skip()
+
+	def enter_width( self, event ):
+		event.Skip()
+
+	def wheel_h( self, event ):
+		event.Skip()
+
+	def enter_height( self, event ):
+		event.Skip()
+
+	def add_region( self, event ):
+		event.Skip()
+
+	def del_region( self, event ):
+		event.Skip()
+
+	def save( self, event ):
+		event.Skip()
+
+	def select_region( self, event ):
+		event.Skip()
+
+	def view_in_main( self, event ):
+		event.Skip()
+
+	def wheel_region( self, event ):
+		event.Skip()
+
+	def step_wheel( self, event ):
+		event.Skip()
+
+	def step_len( self, event ):
+		event.Skip()
+
+	def save_exit( self, event ):
 		event.Skip()
 
 

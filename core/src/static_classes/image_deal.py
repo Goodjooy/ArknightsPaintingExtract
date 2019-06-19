@@ -6,6 +6,7 @@ from re import match, split
 
 import PIL.Image
 import numpy
+import wx
 from PIL import Image
 
 from core.src.static_classes.static_data import GlobalData
@@ -16,6 +17,11 @@ from core.src.structs_classes.image_resize import PerResize
 
 
 class ImageWork(object):
+    @staticmethod
+    def show_in_screen(pic, bitmap):
+        temp = wx.Bitmap.FromBufferRGBA(pic.width, pic.height, pic.tobytes())
+        bitmap.SetBitmap(temp)
+
     @staticmethod
     def cut_pic_builder(size):
         """
@@ -158,15 +164,16 @@ class ImageWork(object):
         pic.save(save_as)
 
     @staticmethod
-    def transform_image(pic, size):
+    def transform_image(pic, size, is_expend=True, bg_color=(255, 255, 255, 0)):
         size = tuple(size)
         pic_size = pic.size
-        bg = PIL.Image.new("RGBA", size, (255, 255, 255, 0))
+        bg = PIL.Image.new("RGBA", size, bg_color)
+        #bg.show()
 
         scale = min(bg.size[0] / pic.size[0], bg.size[1] / pic.size[1])
         size = (round(pic.size[0] * scale), round(pic.size[1] * scale))
 
-        if pic_size[0] <= size[0] and pic_size[1] <= size[1]:
+        if is_expend and pic.size[0] <= size[0] and pic.size[1] <= size[1]:
             pic = pic
         else:
             pic = pic.resize(size, PIL.Image.ANTIALIAS)

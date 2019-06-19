@@ -4,10 +4,12 @@ import re
 import wx
 
 import core.src.structs_classes.extract_structs as es
-from core.src.frame_classes.design_frame import MainFrame
+from core.src.frame_classes.design_frame import MainFrame, MyDialogHandleSplit
 from core.src.static_classes.file_read import FileFilter
+from core.src.static_classes.image_deal import ImageWork
 from core.src.static_classes.static_data import GlobalData
 from core.src.structs_classes.atlas_structs import AtlasList
+from core.src.structs_classes.handle_split import HandleSplitHolder
 
 
 class DragOrderPainting(wx.FileDropTarget):
@@ -103,3 +105,31 @@ class DragOrderAtlas(wx.FileDropTarget):
         else:
 
             return True
+
+
+class DragOrderHandleSplit(wx.FileDropTarget):
+    def __init__(self, parent: MyDialogHandleSplit, value: HandleSplitHolder):
+        super(DragOrderHandleSplit, self).__init__()
+        self.value = value
+        self.parent = parent
+
+    def OnDropFiles(self, x, y, filenames):
+        try:
+            files = filter(lambda x_s: os.path.isfile(x_s), filenames)
+
+            file = list(files)[0]
+            self.value.val = file
+
+            self.value.load_img()
+
+            pic, size = ImageWork.transform_image(self.value.img, self.parent.m_bitmap_view_img.GetSize())
+
+            temp = wx.Bitmap.FromBufferRGBA(pic.width, pic.height, pic.tobytes())
+            self.parent.m_bitmap_view_img.SetBitmap(temp)
+
+            self.parent.m_staticText_info.SetLabel(f"完成导入图片 {file};\t尺寸：{size}")
+
+            return True
+        except Exception as info:
+            print(info)
+            return False

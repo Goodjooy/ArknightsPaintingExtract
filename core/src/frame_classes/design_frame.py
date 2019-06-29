@@ -88,7 +88,7 @@ class MainFrame ( wx.Frame ):
 		self.m_panel_painting.SetSizer( bSizer3 )
 		self.m_panel_painting.Layout()
 		bSizer3.Fit( self.m_panel_painting )
-		self.m_notebook_work_type.AddPage( self.m_panel_painting, u"立绘还原", True )
+		self.m_notebook_work_type.AddPage( self.m_panel_painting, u"立绘还原", False )
 		self.m_panel5 = wx.Panel( self.m_notebook_work_type, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer27 = wx.BoxSizer( wx.VERTICAL )
 
@@ -124,7 +124,7 @@ class MainFrame ( wx.Frame ):
 		self.m_panel5.SetSizer( bSizer27 )
 		self.m_panel5.Layout()
 		bSizer27.Fit( self.m_panel5 )
-		self.m_notebook_work_type.AddPage( self.m_panel5, u"atlas切割", False )
+		self.m_notebook_work_type.AddPage( self.m_panel5, u"atlas切割", True )
 		self.m_panel6 = wx.Panel( self.m_notebook_work_type, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer271 = wx.BoxSizer( wx.VERTICAL )
 
@@ -298,19 +298,22 @@ class MainFrame ( wx.Frame ):
 		# Connect Events
 		self.Bind( wx.EVT_CLOSE, self.exit )
 		self.Bind( wx.EVT_MOVE_END, self.resize )
-		self.m_notebook_work_type.Bind( wx.EVT_NOTEBOOK_PAGE_CHANGED, self.work_chage )
+		self.m_notebook_work_type.Bind( wx.EVT_NOTEBOOK_PAGE_CHANGED, self.g_work_change )
 		self.m_p_choice_filter.Bind( wx.EVT_CHOICE, self.p_filter_work )
 		self.m_p_searchCtrl_tree.Bind( wx.EVT_SEARCHCTRL_CANCEL_BTN, self.p_cancel_work )
 		self.m_p_searchCtrl_tree.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self.p_search_work )
 		self.m_p_searchCtrl_tree.Bind( wx.EVT_TEXT, self.p_search )
 		self.m_p_searchCtrl_tree.Bind( wx.EVT_TEXT_ENTER, self.p_search_work )
+		self.m_p_treeCtrl_info.Bind( wx.EVT_TREE_GET_INFO, self.get )
 		self.m_p_treeCtrl_info.Bind( wx.EVT_TREE_SEL_CHANGED, self.p_on_info_select )
+		self.m_p_treeCtrl_info.Bind( wx.EVT_TREE_SET_INFO, self.set )
 		self.m_p_button_work.Bind( wx.EVT_BUTTON, self.p_work )
 		self.m_p_button_change.Bind( wx.EVT_BUTTON, self.p_choice_file )
 		self.m_p_button_setting.Bind( wx.EVT_BUTTON, self.p_setting )
 		self.m_a_searchCtrl_atlas.Bind( wx.EVT_SEARCHCTRL_CANCEL_BTN, self.a_cancel )
 		self.m_a_searchCtrl_atlas.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self.a_search )
 		self.m_a_searchCtrl_atlas.Bind( wx.EVT_TEXT_ENTER, self.a_search )
+		self.m_a_treeCtrl_atlas.Bind( wx.EVT_TREE_END_DRAG, self.deal )
 		self.m_a_treeCtrl_atlas.Bind( wx.EVT_TREE_ITEM_RIGHT_CLICK, self.a_re_split )
 		self.m_a_treeCtrl_atlas.Bind( wx.EVT_TREE_SEL_CHANGED, self.a_tree_select )
 		self.m_a_button_updata.Bind( wx.EVT_BUTTON, self.a_update_atlas )
@@ -347,7 +350,7 @@ class MainFrame ( wx.Frame ):
 	def resize( self, event ):
 		event.Skip()
 
-	def work_chage( self, event ):
+	def g_work_change( self, event ):
 		event.Skip()
 
 	def p_filter_work( self, event ):
@@ -363,7 +366,13 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 
+	def get( self, event ):
+		event.Skip()
+
 	def p_on_info_select( self, event ):
+		event.Skip()
+
+	def set( self, event ):
 		event.Skip()
 
 	def p_work( self, event ):
@@ -381,6 +390,9 @@ class MainFrame ( wx.Frame ):
 	def a_search( self, event ):
 		event.Skip()
 
+
+	def deal( self, event ):
+		event.Skip()
 
 	def a_re_split( self, event ):
 		event.Skip()

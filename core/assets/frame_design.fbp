@@ -136,11 +136,11 @@
                                         <property name="window_extra_style"></property>
                                         <property name="window_name"></property>
                                         <property name="window_style"></property>
-                                        <event name="OnNotebookPageChanged">work_chage</event>
+                                        <event name="OnNotebookPageChanged">g_work_change</event>
                                         <object class="notebookpage" expanded="1">
                                             <property name="bitmap"></property>
                                             <property name="label">立绘还原</property>
-                                            <property name="select">1</property>
+                                            <property name="select">0</property>
                                             <object class="wxPanel" expanded="1">
                                                 <property name="BottomDockable">1</property>
                                                 <property name="LeftDockable">1</property>
@@ -456,7 +456,9 @@
                                                             <property name="window_extra_style"></property>
                                                             <property name="window_name"></property>
                                                             <property name="window_style"></property>
+                                                            <event name="OnTreeGetInfo">get</event>
                                                             <event name="OnTreeSelChanged">p_on_info_select</event>
+                                                            <event name="OnTreeSetInfo">set</event>
                                                         </object>
                                                     </object>
                                                     <object class="sizeritem" expanded="0">
@@ -822,7 +824,7 @@
                                         <object class="notebookpage" expanded="1">
                                             <property name="bitmap"></property>
                                             <property name="label">atlas切割</property>
-                                            <property name="select">0</property>
+                                            <property name="select">1</property>
                                             <object class="wxPanel" expanded="1">
                                                 <property name="BottomDockable">1</property>
                                                 <property name="LeftDockable">1</property>
@@ -1003,6 +1005,7 @@
                                                             <property name="window_extra_style"></property>
                                                             <property name="window_name"></property>
                                                             <property name="window_style"></property>
+                                                            <event name="OnTreeEndDrag">deal</event>
                                                             <event name="OnTreeItemRightClick">a_re_split</event>
                                                             <event name="OnTreeSelChanged">a_tree_select</event>
                                                         </object>

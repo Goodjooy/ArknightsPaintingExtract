@@ -66,11 +66,17 @@ class MainFrame(Mf):
         # 数据储存结构实例
         self.p_painting_work = PerWorkList()
         self.p_view_work = PerWorkList()
+
+        self.p_is_info_change = False
+
+        def update_p_info():
+            self.p_is_info_change = True
+
         # 查找tree索引的信息
         self.p_pos, self.p_type_is, self.p_name, self.p_index = None, None, None, None
         # 设置拖动绑定
         self.p_drop = DragOrderPainting(self.p_painting_work, self.p_view_work, self, self.m_p_treeCtrl_info,
-                                        self.p_root, self.g_setting_info, self.g_names)
+                                        self.p_root, self.g_setting_info, self.g_names, update_type=update_p_info)
         self.m_p_treeCtrl_info.SetDropTarget(self.p_drop)
         # 立绘还原线程
         self.p_thread_quick = None
@@ -118,7 +124,7 @@ class MainFrame(Mf):
         self.ar_select_id = None
 
         self.ar_drop = DragOrderPainting(self.ar_img_group, self.ar_img_view, self, self.m_ar_treeCtrl_array,
-                                         self.ar_root, self.g_setting_info, self.g_names)
+                                         self.ar_root, self.g_setting_info, self.g_names, ImageList)
         self.m_ar_treeCtrl_array.SetDropTarget(self.ar_drop)
 
         self.ar_is_search = False
@@ -155,7 +161,7 @@ class MainFrame(Mf):
         self.rs_select_id = None
 
         self.rs_drop = DragOrderPainting(self.rs_img_group, self.rs_img_view, self, self.m_rs_treeCtrl_info,
-                                         self.rs_root, self.g_setting_info, self.g_names)
+                                         self.rs_root, self.g_setting_info, self.g_names, ImageResizeList)
         self.m_rs_treeCtrl_info.SetDropTarget(self.rs_drop)
 
         self.rs_is_search = False
@@ -222,7 +228,7 @@ class MainFrame(Mf):
 
         self.view_img(img)
 
-    def a_split_work(self, val, target, exist_ok=False):
+    def a_split_work(self, val, target:PerAtlas, exist_ok=False):
         if self.a_last_region_id is not None:
             if val == self.a_last_region_id and not exist_ok:
                 return
@@ -238,6 +244,11 @@ class MainFrame(Mf):
                 self.a_region_view_img[key] = img[0]
 
             self.m_a_treeCtrl_atlas.Expand(val)
+        else:
+            if not target.is_able():
+                wx.MessageBox("无可用切割文件\n\t请于“立绘还原”区导入贴图文件，\n\t或点击“更新导入数据”", "提示", wx.OK | wx.ICON_INFORMATION)
+            else:
+                wx.MessageBox("切割文件失败\n\t请于“立绘还原”区更换贴图或适配蒙版", "提示", wx.OK | wx.ICON_INFORMATION)
 
     def a_view_work(self, target: PerAtlas):
         if target:
@@ -434,6 +445,15 @@ class MainFrame(Mf):
             self.p_enter_exit = False
 
     # 以下为回调函数
+    def g_work_change(self, event):
+        index = event.GetSelection()
+        if index == 1 and self.p_is_info_change:
+            if not self.p_drop.is_given:
+                self.p_painting_work = self.p_drop.value_group
+            self.a_update_atlas(None)
+            self.p_is_info_change = False
+
+            self.m_staticText_info.SetLabel(u"检测到立绘还原区更新，已经自动更新")
 
     # 立绘处理部分
     def p_on_info_select(self, event):
@@ -490,6 +510,7 @@ class MainFrame(Mf):
                         f"选择： {name.cn_name}中的{pos}{type_is}: {self.m_p_treeCtrl_info.GetItemText(val)}，{is_able}")
 
     def p_choice_file(self, event):
+        self.p_is_info_change = True
         if self.p_pos == self.data.td_single:
             self.change_path(self.p_pos, self.p_type_is, self.p_name)
         else:
@@ -633,9 +654,12 @@ class MainFrame(Mf):
     def a_update_atlas(self, event):
         if not self.a_drop.is_given:
             self.a_atlas_group = self.a_drop.value_group
-        self.a_atlas_group = self.a_atlas_group.extract_tex(self.p_painting_work)
-        self.m_a_treeCtrl_atlas.DeleteChildren(self.a_root)
-        self.a_atlas_group.show_in_tree(self.m_a_treeCtrl_atlas, self.a_root)
+        if self.a_atlas_group:
+            self.a_atlas_group = self.a_atlas_group.extract_tex(self.p_painting_work)
+            self.m_a_treeCtrl_atlas.DeleteChildren(self.a_root)
+            self.a_atlas_group.show_in_tree(self.m_a_treeCtrl_atlas, self.a_root)
+        else:
+            wx.MessageBox("请拖动导入Atlas文件", "提示", wx.OK | wx.ICON_INFORMATION)
 
     def a_change_atlas(self, event):
         if self.a_tree_type == self.data.td_atlas_type:
@@ -648,10 +672,13 @@ class MainFrame(Mf):
 
                     self.m_a_treeCtrl_atlas.SetItemText(a_id, data)
 
+
             else:
                 a_id, data = self.a_tree_target.set_atlas(self.a_tree_index)
 
                 self.m_a_treeCtrl_atlas.SetItemText(a_id, data)
+
+            self.a_split_work(self.a_last_region_id, self.a_tree_target, True)
 
     def a_export(self, event):
         if self.a_is_search:

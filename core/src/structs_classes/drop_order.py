@@ -1,5 +1,6 @@
 import os
 import re
+from collections import Callable
 
 import wx
 
@@ -58,11 +59,13 @@ class BasicDragOrder(wx.FileDropTarget):
 
 class DragOrderPainting(BasicDragOrder):
     def __init__(self, parent: es.PerWorkList, view_work: es.PerWorkList, frame: MainFrame, work_on_tree, work_on_root,
-                 setting, g_names):
+                 setting, g_names, class_type=es.PerWorkList, update_type: Callable = None):
         super(DragOrderPainting, self).__init__(parent, view_work, work_on_tree, work_on_root, frame.m_staticText_info,
                                                 setting, g_names)
+        self.update_type = update_type
+        self.class_type = class_type
         self.frame = frame
-        self.parent = es.PerWorkList(self.parent)
+        self.parent = self.class_type(self.parent)
 
     def OnDropFiles(self, x=0, y=0, filenames=None):
         super(DragOrderPainting, self).OnDropFiles(x, y, filenames)
@@ -84,10 +87,13 @@ class DragOrderPainting(BasicDragOrder):
             if returned_mesh:
                 self.frame.m_gauge_state.SetValue(100)
 
-            self.view_work = es.PerWorkList(self.parent)
+            self.view_work = self.class_type(self.parent)
 
             self.work_on_tree.DeleteChildren(self.work_on_root)
             self.parent.show_in_tree(self.work_on_tree, self.work_on_root)
+
+            if isinstance(self.update_type,Callable):
+                self.update_type()
 
         except RuntimeError:
             return False

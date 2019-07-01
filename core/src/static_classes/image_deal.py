@@ -9,6 +9,7 @@ import numpy
 import wx
 from PIL import Image
 
+from core.src.static_classes.png2svg import rgba_image_to_svg_pixels
 from core.src.static_classes.static_data import GlobalData
 from core.src.structs_classes.painting_work_structs.atlas_structs import PerAtlas
 from core.src.structs_classes.painting_work_structs.extract_structs import PerInfo
@@ -250,23 +251,36 @@ class ImageWork(object):
         return values
 
     @staticmethod
-    def atlas_split_export(value: PerAtlas):
-        try:
-            if value.is_need_work():
-                work_image = ImageWork.p_ak_painting_main(value.mesh_path, value.tex_path)
+    def atlas_split_export_builder(is_use_svg=False, scale=1):
+        def atlas_split_export(value: PerAtlas):
+            try:
+                if value.is_need_work():
+                    work_image = ImageWork.p_ak_painting_main(value.mesh_path, value.tex_path)
+                else:
+                    work_image = PIL.Image.open(value.tex_path)
+                img_group = ImageWork.atlas_split_main(work_image, value.atlas_path)
+
+                os.makedirs(value.save_path, exist_ok=True)
+
+                for key in img_group.keys():
+                    if is_use_svg:
+                        svg_info = rgba_image_to_svg_pixels(img_group[key])
+                        with open(os.path.join(value.save_path, key + ".svg"), 'w') as file:
+                            file.write(svg_info)
+                    else:
+                        pic = img_group[key]
+                        if scale == 1:
+                            pic.save(os.path.join(value.save_path, key + ".png"))
+                        else:
+                            pic = pic.resize((round(pic.width * scale), round(pic.height * scale)), PIL.Image.BILINEAR)
+                            pic.save(os.path.join(value.save_path, key + ".png"))
+
+            except Exception as info:
+                return False, str(info)
             else:
-                work_image = PIL.Image.open(value.tex_path)
-            img_group = ImageWork.atlas_split_main(work_image, value.atlas_path)
+                return True, "successfully"
 
-            os.makedirs(value.save_path, exist_ok=True)
-
-            for key in img_group.keys():
-                img_group[key].save(os.path.join(value.save_path, key + ".png"))
-
-        except Exception as info:
-            return False, str(info)
-        else:
-            return True, "successfully"
+        return atlas_split_export
 
     @staticmethod
     def atlas_split_view(value: PerAtlas, size):
@@ -287,6 +301,7 @@ class ImageWork(object):
             return True, img_group
 
     """矩阵切割部分"""
+
     # array split work func
     @staticmethod
     def array_split_main(img, val_x, val_y, size_w, size_h, size, inside):
@@ -372,6 +387,7 @@ class ImageWork(object):
         return export
 
     """图像拉伸部分"""
+
     # image resize func
     @staticmethod
     def image_resize_main(img: Image.Image, type_is, value_w=0, value_h=0):

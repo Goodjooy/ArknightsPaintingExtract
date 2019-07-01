@@ -61,6 +61,8 @@ class MainFrame(Mf):
         self.g__dialog = None
         self.work_path = path
 
+        self.m_notebook_work_type.SetSelection(0)
+
         """立绘还原部分 p:painting extract"""
         self.p_root = self.m_p_treeCtrl_info.AddRoot(u"")
         # 数据储存结构实例
@@ -72,11 +74,15 @@ class MainFrame(Mf):
         def update_p_info():
             self.p_is_info_change = True
 
+        def p_setter(group):
+            self.p_painting_work = PerWorkList(group)
+
         # 查找tree索引的信息
         self.p_pos, self.p_type_is, self.p_name, self.p_index = None, None, None, None
         # 设置拖动绑定
         self.p_drop = DragOrderPainting(self.p_painting_work, self.p_view_work, self, self.m_p_treeCtrl_info,
-                                        self.p_root, self.g_setting_info, self.g_names, update_type=update_p_info)
+                                        self.p_root, self.g_setting_info, self.g_names, gorup_setter=p_setter,
+                                        update_type=update_p_info)
         self.m_p_treeCtrl_info.SetDropTarget(self.p_drop)
         # 立绘还原线程
         self.p_thread_quick = None
@@ -102,14 +108,24 @@ class MainFrame(Mf):
         self.a_tree_target = None
         self.a_select_id = None
 
+        def a_setter(group):
+            self.a_atlas_group = AtlasList(group)
+
         self.a_drop = DragOrderAtlas(self.a_atlas_group, self.a_atlas_view, self, self.m_a_treeCtrl_atlas, self.a_root,
-                                     self.g_setting_info, self.g_names)
+                                     self.g_setting_info, self.g_names, a_setter)
         self.m_a_treeCtrl_atlas.SetDropTarget(self.a_drop)
 
         self.a_is_search = False
 
         self.a_region_view_img = {}
         self.a_last_region_id = None
+
+        self.m_a_toggleBtn_ex_to_svg.SetValue(False)
+
+        self.a_scale = 1
+
+        self.m_a_toggleBtn_resize.Enable(True)
+        self.m_a_comboBox_resize.Enable(True)
 
         """矩阵切割部分"""
         self.ar_root = self.m_ar_treeCtrl_array.AddRoot(u"")
@@ -123,8 +139,11 @@ class MainFrame(Mf):
         self.ar_tree_target = None
         self.ar_select_id = None
 
+        def ar_setter(group):
+            self.ar_img_group = ImageList(group)
+
         self.ar_drop = DragOrderPainting(self.ar_img_group, self.ar_img_view, self, self.m_ar_treeCtrl_array,
-                                         self.ar_root, self.g_setting_info, self.g_names, ImageList)
+                                         self.ar_root, self.g_setting_info, self.g_names, ar_setter, ImageList)
         self.m_ar_treeCtrl_array.SetDropTarget(self.ar_drop)
 
         self.ar_is_search = False
@@ -160,8 +179,11 @@ class MainFrame(Mf):
         self.rs_tree_target = None
         self.rs_select_id = None
 
+        def rs_setter(group):
+            self.rs_img_group = ImageResizeList(group)
+
         self.rs_drop = DragOrderPainting(self.rs_img_group, self.rs_img_view, self, self.m_rs_treeCtrl_info,
-                                         self.rs_root, self.g_setting_info, self.g_names, ImageResizeList)
+                                         self.rs_root, self.g_setting_info, self.g_names, rs_setter, ImageResizeList)
         self.m_rs_treeCtrl_info.SetDropTarget(self.rs_drop)
 
         self.rs_is_search = False
@@ -228,7 +250,7 @@ class MainFrame(Mf):
 
         self.view_img(img)
 
-    def a_split_work(self, val, target:PerAtlas, exist_ok=False):
+    def a_split_work(self, val, target: PerAtlas, exist_ok=False):
         if self.a_last_region_id is not None:
             if val == self.a_last_region_id and not exist_ok:
                 return
@@ -447,9 +469,7 @@ class MainFrame(Mf):
     # 以下为回调函数
     def g_work_change(self, event):
         index = event.GetSelection()
-        if index == 1 and self.p_is_info_change:
-            if not self.p_drop.is_given:
-                self.p_painting_work = self.p_drop.value_group
+        if index == 1 and self.p_is_info_change and self.a_atlas_group:
             self.a_update_atlas(None)
             self.p_is_info_change = False
 
@@ -459,8 +479,7 @@ class MainFrame(Mf):
     def p_on_info_select(self, event):
         """选择tree中的元素时使用"""
         if not self.p_enter_exit:
-            if not self.p_drop.is_given:
-                self.p_painting_work = self.p_drop.value_group
+
             self.m_p_button_change.Enable(False)
             val = event.GetItem()
 
@@ -652,8 +671,6 @@ class MainFrame(Mf):
 
     # atlas 切割部分
     def a_update_atlas(self, event):
-        if not self.a_drop.is_given:
-            self.a_atlas_group = self.a_drop.value_group
         if self.a_atlas_group:
             self.a_atlas_group = self.a_atlas_group.extract_tex(self.p_painting_work)
             self.m_a_treeCtrl_atlas.DeleteChildren(self.a_root)
@@ -671,7 +688,6 @@ class MainFrame(Mf):
                     a_id, data = self.a_tree_target.set_atlas(index)
 
                     self.m_a_treeCtrl_atlas.SetItemText(a_id, data)
-
 
             else:
                 a_id, data = self.a_tree_target.set_atlas(self.a_tree_index)
@@ -695,7 +711,9 @@ class MainFrame(Mf):
             temp = dialog.GetPath()
 
             if work_on.build_able().__len__() > 0:
-                self.export_all(temp, work_on, ImageWork.atlas_split_export)
+                self.export_all(temp, work_on,
+                                ImageWork.atlas_split_export_builder(self.m_a_toggleBtn_ex_to_svg.GetValue(),
+                                                                     self.a_scale))
 
     def a_search(self, event):
         value = event.GetString()
@@ -726,9 +744,6 @@ class MainFrame(Mf):
     def a_tree_select(self, event):
         """选择tree中的元素时使用"""
         type_group = ("texture2d贴图", "mesh网格", "atlas文件", "切割预览")
-
-        if not self.a_drop.is_given:
-            self.a_atlas_group = self.a_drop.value_group
 
         if self.a_is_search:
             work_on = self.a_atlas_view
@@ -795,6 +810,37 @@ class MainFrame(Mf):
                 self.a_split_work(val, target, exist_ok=True)
                 self.m_staticText_info.SetLabel(f'【Atlas区】选择：{target.cn_name}中的再次切割,单个为{is_single}')
 
+    def a_use_svg(self, event):
+        value = event.IsChecked()
+        self.m_a_toggleBtn_resize.Enable(not value)
+
+    def a_export_resize(self, event):
+        value = event.IsChecked()
+
+        self.m_a_comboBox_resize.Enable(value)
+
+    def a_set_scale(self, event):
+        value = event.GetString()
+        if value != "":
+            match = re.match(r'^\d+$', value)
+            if match is not None:
+                value = int(value)
+                if value > 0:
+                    self.a_scale = value
+                else:
+                    self.m_a_comboBox_resize.SetValue(str(self.a_scale))
+
+            else:
+                self.m_a_comboBox_resize.SetValue(str(self.a_scale))
+        else:
+            self.m_a_comboBox_resize.SetValue(str(self.a_scale))
+
+    def a_wheel_scale(self, event):
+        step = event.GetWheelRotation()
+        step = int(step / abs(step))
+
+        self.m_a_comboBox_resize.SetValue(str(self.a_scale + (-1 * step)))
+
     # 阵列切割区
     def ar_export(self, event):
         if self.ar_is_search:
@@ -849,8 +895,7 @@ class MainFrame(Mf):
     def ar_tree_select(self, event):
         """选择tree中的元素时使用"""
         type_group = ("texture2d贴图", "mesh网格", "atlas文件", "切割预览")
-        if not self.ar_drop.is_given:
-            self.ar_img_group = self.ar_drop.value_group
+
         if self.ar_is_search:
             work_on = self.ar_img_view
         else:
@@ -943,9 +988,6 @@ class MainFrame(Mf):
     def rs_item_select(self, event):
         """选择tree中的元素时使用"""
         type_group = ("texture2d贴图", "mesh网格", "atlas文件", "切割预览", "拉伸预览")
-
-        if not self.rs_drop.is_given:
-            self.rs_img_group = self.rs_drop.value_group
 
         if self.ar_is_search:
             work_on = self.rs_img_view

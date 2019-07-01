@@ -91,7 +91,7 @@ class PerAtlas(PerInfo):
         self.mesh_id = tree.AppendItem(self.tree_ID, f"Mesh文件路径：{self.mesh_path}")
         self.atlas_id = tree.AppendItem(self.tree_ID, f"Atlas文件路径：{self.atlas_path}")
 
-        more_atlas = tree.AppendItem(self.tree_ID, f"其他Atlas文件-({len(self.more_atlas)})")
+        more_atlas = tree.AppendItem(self.tree_ID, f"其他Atlas文件({len(self.more_atlas)})")
         for each_path in self.more_atlas:
             val = tree.AppendItem(more_atlas, each_path)
             self.more_atlas_ids.append(val)

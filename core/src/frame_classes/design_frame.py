@@ -92,13 +92,48 @@ class MainFrame ( wx.Frame ):
 		self.m_panel5 = wx.Panel( self.m_notebook_work_type, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer27 = wx.BoxSizer( wx.VERTICAL )
 
+		bSizer51 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_a_toggleBtn_ex_to_svg = wx.ToggleButton( self.m_panel5, wx.ID_ANY, u"矢量图导出模式", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer51.Add( self.m_a_toggleBtn_ex_to_svg, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+		self.m_staticline47 = wx.StaticLine( self.m_panel5, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
+		bSizer51.Add( self.m_staticline47, 0, wx.EXPAND |wx.ALL, 5 )
+
 		self.m_a_searchCtrl_atlas = wx.SearchCtrl( self.m_panel5, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_CENTER|wx.TE_PROCESS_ENTER )
 		self.m_a_searchCtrl_atlas.ShowSearchButton( True )
 		self.m_a_searchCtrl_atlas.ShowCancelButton( True )
-		bSizer27.Add( self.m_a_searchCtrl_atlas, 0, wx.ALL|wx.EXPAND, 5 )
+		bSizer51.Add( self.m_a_searchCtrl_atlas, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+
+		bSizer27.Add( bSizer51, 0, wx.EXPAND, 5 )
 
 		self.m_a_treeCtrl_atlas = wx.TreeCtrl( self.m_panel5, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TR_DEFAULT_STYLE|wx.TR_FULL_ROW_HIGHLIGHT|wx.TR_HAS_BUTTONS|wx.TR_HAS_VARIABLE_ROW_HEIGHT|wx.TR_HIDE_ROOT|wx.TR_ROW_LINES|wx.TR_SINGLE|wx.TR_TWIST_BUTTONS )
 		bSizer27.Add( self.m_a_treeCtrl_atlas, 1, wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+
+		bSizer52 = wx.BoxSizer( wx.HORIZONTAL )
+
+		self.m_a_toggleBtn_resize = wx.ToggleButton( self.m_panel5, wx.ID_ANY, u"对导出图像进行缩放", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer52.Add( self.m_a_toggleBtn_resize, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+		self.m_staticline49 = wx.StaticLine( self.m_panel5, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
+		bSizer52.Add( self.m_staticline49, 0, wx.EXPAND |wx.ALL, 5 )
+
+		self.m_staticText26 = wx.StaticText( self.m_panel5, wx.ID_ANY, u"放大倍数：", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText26.Wrap( -1 )
+
+		bSizer52.Add( self.m_staticText26, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+		m_a_comboBox_resizeChoices = [ u"2", u"4", u"8" ]
+		self.m_a_comboBox_resize = wx.ComboBox( self.m_panel5, wx.ID_ANY, u"2", wx.DefaultPosition, wx.DefaultSize, m_a_comboBox_resizeChoices, 0 )
+		self.m_a_comboBox_resize.SetSelection( 0 )
+		bSizer52.Add( self.m_a_comboBox_resize, 1, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+
+		bSizer27.Add( bSizer52, 0, wx.EXPAND, 5 )
+
+		self.m_staticline48 = wx.StaticLine( self.m_panel5, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		bSizer27.Add( self.m_staticline48, 0, wx.EXPAND |wx.ALL, 5 )
 
 		bSizer30 = wx.BoxSizer( wx.HORIZONTAL )
 
@@ -310,12 +345,15 @@ class MainFrame ( wx.Frame ):
 		self.m_p_button_work.Bind( wx.EVT_BUTTON, self.p_work )
 		self.m_p_button_change.Bind( wx.EVT_BUTTON, self.p_choice_file )
 		self.m_p_button_setting.Bind( wx.EVT_BUTTON, self.p_setting )
+		self.m_a_toggleBtn_ex_to_svg.Bind( wx.EVT_TOGGLEBUTTON, self.a_use_svg )
 		self.m_a_searchCtrl_atlas.Bind( wx.EVT_SEARCHCTRL_CANCEL_BTN, self.a_cancel )
 		self.m_a_searchCtrl_atlas.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self.a_search )
 		self.m_a_searchCtrl_atlas.Bind( wx.EVT_TEXT_ENTER, self.a_search )
-		self.m_a_treeCtrl_atlas.Bind( wx.EVT_TREE_END_DRAG, self.deal )
 		self.m_a_treeCtrl_atlas.Bind( wx.EVT_TREE_ITEM_RIGHT_CLICK, self.a_re_split )
 		self.m_a_treeCtrl_atlas.Bind( wx.EVT_TREE_SEL_CHANGED, self.a_tree_select )
+		self.m_a_toggleBtn_resize.Bind( wx.EVT_TOGGLEBUTTON, self.a_export_resize )
+		self.m_a_comboBox_resize.Bind( wx.EVT_MOUSEWHEEL, self.a_wheel_scale )
+		self.m_a_comboBox_resize.Bind( wx.EVT_TEXT, self.a_set_scale )
 		self.m_a_button_updata.Bind( wx.EVT_BUTTON, self.a_update_atlas )
 		self.m_a_button_change_atlas.Bind( wx.EVT_BUTTON, self.a_change_atlas )
 		self.m_a_button_export.Bind( wx.EVT_BUTTON, self.a_export )
@@ -384,6 +422,9 @@ class MainFrame ( wx.Frame ):
 	def p_setting( self, event ):
 		event.Skip()
 
+	def a_use_svg( self, event ):
+		event.Skip()
+
 	def a_cancel( self, event ):
 		event.Skip()
 
@@ -391,13 +432,19 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 
-	def deal( self, event ):
-		event.Skip()
-
 	def a_re_split( self, event ):
 		event.Skip()
 
 	def a_tree_select( self, event ):
+		event.Skip()
+
+	def a_export_resize( self, event ):
+		event.Skip()
+
+	def a_wheel_scale( self, event ):
+		event.Skip()
+
+	def a_set_scale( self, event ):
 		event.Skip()
 
 	def a_update_atlas( self, event ):

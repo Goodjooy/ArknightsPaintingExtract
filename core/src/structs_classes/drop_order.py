@@ -16,9 +16,10 @@ from core.src.structs_classes.painting_work_structs.handle_split import HandleSp
 
 class BasicDragOrder(wx.FileDropTarget):
     def __init__(self, parent: BasicInfoList, view_work: BasicInfoList, work_on_tree, work_on_root, info_set, setting,
-                 g_names):
+                 g_names, group_setter: Callable):
         super(BasicDragOrder, self).__init__()
 
+        self.group_setter = group_setter
         self.setting = setting
         self.work_on_root = work_on_root
         self.work_on_tree = work_on_tree
@@ -52,24 +53,32 @@ class BasicDragOrder(wx.FileDropTarget):
 
         return self.paths
 
+    def file_deal_work(self, file_names):
+        return True
+
+    def finish_work(self):
+        if isinstance(self.group_setter, Callable):
+            self.group_setter(self.parent)
+
     def OnDropFiles(self, x=0, y=0, filenames=None):
         self.is_given = False
-        return True
+        value = self.file_deal_work(filenames)
+
+        self.finish_work()
+        return value
 
 
 class DragOrderPainting(BasicDragOrder):
     def __init__(self, parent: es.PerWorkList, view_work: es.PerWorkList, frame: MainFrame, work_on_tree, work_on_root,
-                 setting, g_names, class_type=es.PerWorkList, update_type: Callable = None):
+                 setting, g_names, gorup_setter: Callable, class_type=es.PerWorkList, update_type: Callable = None):
         super(DragOrderPainting, self).__init__(parent, view_work, work_on_tree, work_on_root, frame.m_staticText_info,
-                                                setting, g_names)
+                                                setting, g_names, gorup_setter)
         self.update_type = update_type
         self.class_type = class_type
         self.frame = frame
         self.parent = self.class_type(self.parent)
 
-    def OnDropFiles(self, x=0, y=0, filenames=None):
-        super(DragOrderPainting, self).OnDropFiles(x, y, filenames)
-        file_names = filenames
+    def file_deal_work(self, file_names):
         try:
 
             paths = self.file_filter(file_names)
@@ -92,9 +101,6 @@ class DragOrderPainting(BasicDragOrder):
             self.work_on_tree.DeleteChildren(self.work_on_root)
             self.parent.show_in_tree(self.work_on_tree, self.work_on_root)
 
-            if isinstance(self.update_type,Callable):
-                self.update_type()
-
         except RuntimeError:
             return False
 
@@ -102,22 +108,27 @@ class DragOrderPainting(BasicDragOrder):
 
             return True
 
+    def finish_work(self):
+        if isinstance(self.update_type, Callable):
+            self.update_type()
+
+        super(DragOrderPainting, self).finish_work()
+
 
 class DragOrderAtlas(BasicDragOrder):
     def __init__(self, parent: AtlasList, view_work: AtlasList, frame: MainFrame, work_on_tree, work_on_root,
-                 setting, g_names):
+                 setting, g_names, group_setter: Callable):
         super(DragOrderAtlas, self).__init__(parent, view_work, work_on_tree, work_on_root, frame.m_staticText_info,
-                                             setting, g_names)
+                                             setting, g_names, group_setter)
         self.frame = frame
 
         self.parent = AtlasList(self.parent)
 
-    def OnDropFiles(self, x=0, y=0, filenames=None):
-        super(DragOrderAtlas, self).OnDropFiles()
-        file_names = filenames
+    def file_deal_work(self, file_names):
+
         try:
             file_names = list(file_names)
-            self.info_set.SetLabel(f"开始导入{len(filenames)}个文件")
+            self.info_set.SetLabel(f"开始导入{len(file_names)}个文件")
 
             paths = self.file_filter(file_names)
 
@@ -135,9 +146,7 @@ class DragOrderAtlas(BasicDragOrder):
 
         except RuntimeError:
             return False
-
         else:
-
             return True
 
 

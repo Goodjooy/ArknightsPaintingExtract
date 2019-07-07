@@ -332,6 +332,9 @@ class PerWorkList(BasicInfoList):
         val = list(enumerate(list(val), 0))
         return val
 
+    def build_view(self):
+        return list(map(lambda x: x.cn_name, self))
+
     def build_skip(self, filename):
         filename = list(map(lambda x: os.path.splitext(os.path.basename(x))[0], filename))
 

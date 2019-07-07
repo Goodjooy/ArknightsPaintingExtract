@@ -734,6 +734,7 @@ class MyDialogSelect ( wx.Dialog ):
 		self.Centre( wx.BOTH )
 
 		# Connect Events
+		self.m_listBox_select_list.Bind( wx.EVT_LISTBOX, self.view_img )
 		self.m_sdbSizer4Cancel.Bind( wx.EVT_BUTTON, self.cancel_press )
 		self.m_sdbSizer4OK.Bind( wx.EVT_BUTTON, self.ok_press )
 
@@ -742,6 +743,9 @@ class MyDialogSelect ( wx.Dialog ):
 
 
 	# Virtual event handlers, overide them in your derived class
+	def view_img( self, event ):
+		event.Skip()
+
 	def cancel_press( self, event ):
 		event.Skip()
 
@@ -791,7 +795,7 @@ class MyDialogSplit ( wx.Dialog ):
 
 		bSizer40.Add( self.m_staticText11, 0, wx.ALL, 5 )
 
-		self.m_textCtrl_split_wide = wx.TextCtrl( self, wx.ID_ANY, u"182", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_textCtrl_split_wide = wx.TextCtrl( self, wx.ID_ANY, u"0", wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer40.Add( self.m_textCtrl_split_wide, 0, wx.ALL, 5 )
 
 		self.m_staticText12 = wx.StaticText( self, wx.ID_ANY, u"阵列切割高", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -799,7 +803,7 @@ class MyDialogSplit ( wx.Dialog ):
 
 		bSizer40.Add( self.m_staticText12, 0, wx.ALL, 5 )
 
-		self.m_textCtrl_split_high = wx.TextCtrl( self, wx.ID_ANY, u"182", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_textCtrl_split_high = wx.TextCtrl( self, wx.ID_ANY, u"0", wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer40.Add( self.m_textCtrl_split_high, 0, wx.ALL, 5 )
 
 		self.m_staticText13 = wx.StaticText( self, wx.ID_ANY, u"内含尺寸", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -807,7 +811,7 @@ class MyDialogSplit ( wx.Dialog ):
 
 		bSizer40.Add( self.m_staticText13, 0, wx.ALL, 5 )
 
-		self.m_textCtrl_inside_size = wx.TextCtrl( self, wx.ID_ANY, u"1", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_textCtrl_inside_size = wx.TextCtrl( self, wx.ID_ANY, u"0", wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer40.Add( self.m_textCtrl_inside_size, 0, wx.ALL, 5 )
 
 
@@ -894,11 +898,12 @@ class MyDialogSplit ( wx.Dialog ):
 		self.m_listBox_img_list = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_listBox_img_listChoices, 0 )
 		bSizer42.Add( self.m_listBox_img_list, 1, wx.ALL|wx.ALIGN_RIGHT|wx.EXPAND, 5 )
 
-		self.m_staticline41 = wx.StaticLine( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
-		bSizer42.Add( self.m_staticline41, 0, wx.EXPAND |wx.ALL, 5 )
+		self.m_staticline50 = wx.StaticLine( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
+		bSizer42.Add( self.m_staticline50, 0, wx.EXPAND |wx.ALL, 5 )
 
-		self.m_slider_scale = wx.Slider( self, wx.ID_ANY, 1, 1, 8, wx.DefaultPosition, wx.DefaultSize, wx.SL_AUTOTICKS|wx.SL_HORIZONTAL|wx.SL_MIN_MAX_LABELS|wx.SL_SELRANGE )
-		bSizer42.Add( self.m_slider_scale, 0, wx.ALL|wx.EXPAND, 5 )
+		m_listBox_spilt_groupsChoices = []
+		self.m_listBox_spilt_groups = wx.ListBox( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_listBox_spilt_groupsChoices, 0 )
+		bSizer42.Add( self.m_listBox_spilt_groups, 1, wx.ALL|wx.EXPAND, 5 )
 
 
 		bSizer38.Add( bSizer42, 1, wx.EXPAND, 5 )
@@ -939,6 +944,12 @@ class MyDialogSplit ( wx.Dialog ):
 
 		# Connect Events
 		self.Bind( wx.EVT_INIT_DIALOG, self.initial )
+		self.m_textCtrl_split_wide.Bind( wx.EVT_MOUSEWHEEL, self.width_wheel )
+		self.m_textCtrl_split_wide.Bind( wx.EVT_TEXT, self.width_enter )
+		self.m_textCtrl_split_high.Bind( wx.EVT_MOUSEWHEEL, self.height_wheel )
+		self.m_textCtrl_split_high.Bind( wx.EVT_TEXT, self.height_enter )
+		self.m_textCtrl_inside_size.Bind( wx.EVT_MOUSEWHEEL, self.inside_wheel )
+		self.m_textCtrl_inside_size.Bind( wx.EVT_TEXT, self.inside_enter )
 		self.m_bpButton_up.Bind( wx.EVT_BUTTON, self.view_up )
 		self.m_bpButton_left.Bind( wx.EVT_BUTTON, self.view_left )
 		self.m_bpButton_cut.Bind( wx.EVT_BUTTON, self.cut_img )
@@ -947,7 +958,7 @@ class MyDialogSplit ( wx.Dialog ):
 		self.m_button19.Bind( wx.EVT_BUTTON, self.show_init_img )
 		self.m_listBox_img_list.Bind( wx.EVT_LISTBOX, self.view_img )
 		self.m_listBox_img_list.Bind( wx.EVT_LISTBOX_DCLICK, self.use_image )
-		self.m_slider_scale.Bind( wx.EVT_SCROLL_CHANGED, self.resize )
+		self.m_listBox_spilt_groups.Bind( wx.EVT_LISTBOX, self.view_per_region )
 		self.m_sdbSizer5Apply.Bind( wx.EVT_BUTTON, self.use_setting )
 		self.m_sdbSizer5Cancel.Bind( wx.EVT_BUTTON, self.cancel_setting )
 		self.m_sdbSizer5Save.Bind( wx.EVT_BUTTON, self.save_setting )
@@ -958,6 +969,24 @@ class MyDialogSplit ( wx.Dialog ):
 
 	# Virtual event handlers, overide them in your derived class
 	def initial( self, event ):
+		event.Skip()
+
+	def width_wheel( self, event ):
+		event.Skip()
+
+	def width_enter( self, event ):
+		event.Skip()
+
+	def height_wheel( self, event ):
+		event.Skip()
+
+	def height_enter( self, event ):
+		event.Skip()
+
+	def inside_wheel( self, event ):
+		event.Skip()
+
+	def inside_enter( self, event ):
 		event.Skip()
 
 	def view_up( self, event ):
@@ -984,7 +1013,7 @@ class MyDialogSplit ( wx.Dialog ):
 	def use_image( self, event ):
 		event.Skip()
 
-	def resize( self, event ):
+	def view_per_region( self, event ):
 		event.Skip()
 
 	def use_setting( self, event ):

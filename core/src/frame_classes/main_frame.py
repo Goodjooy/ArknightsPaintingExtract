@@ -10,6 +10,7 @@ import wx
 from PIL import Image
 
 from core.src.frame_classes.design_frame import MainFrame as Mf
+from core.src.frame_classes.group_split_frame import DefineSplit
 from core.src.frame_classes.setting_frame import Setting
 from core.src.static_classes.file_read import FileFilter
 from core.src.static_classes.image_deal import ImageWork
@@ -154,16 +155,14 @@ class MainFrame(Mf):
         self.ar_split_group = []
         self.ar_name_group = ["<---*--->"]
         try:
-            with open(os.path.join(path, "core\\assts\\split_group.json"), 'r')as file:
+            with open(os.path.join(path, "core\\assets\\split_group.json"), 'r')as file:
                 temp = json.load(file)
-                self.ar_split_group = temp["value"]
+                self.ar_split_group = list(temp["value"])
                 self.ar_name_group = ["<---*--->"]
             self.ar_name_group.extend(temp["name"])
         except FileNotFoundError:
             pass
-
         self.ar_use_split = 0
-
         self.m_ar_choice_type.Set(self.ar_name_group)
         self.m_ar_choice_type.SetSelection(self.ar_use_split)
 
@@ -318,6 +317,16 @@ class MainFrame(Mf):
 
         self.m_textCtrl_info.SetLabel(val)
         self.m_simplebook1.SetSelection(1)
+
+    def ar_update_spliter(self):
+        self.m_ar_choice_type.Clear()
+        self.m_ar_choice_type.Set(self.ar_name_group)
+        self.ar_use_split = 0
+        self.m_ar_choice_type.SetSelection(self.ar_use_split)
+
+        with open(os.path.join(self.work_path, "core\\assets\\split_group.json"), 'w')as file:
+            temp = {'value': self.ar_split_group, "name": self.ar_name_group[1:]}
+            json.dump(temp, file, indent=4)
 
     def rs_resize_view(self, target):
         is_ok, pic = ImageWork.image_resize_view(target, self.m_bitmap_show.GetSize(),
@@ -861,10 +870,42 @@ class MainFrame(Mf):
                                 ImageWork.array_split_export_builder(self.ar_split_group[self.ar_use_split - 1]))
 
     def ar_new_spliter(self, event):
-        pass
+        if self.ar_img_group:
+            self.g__dialog = wx.TextEntryDialog(self, "请输入新建切割器名称", "新建切割器")
+
+            if wx.ID_OK == self.g__dialog.ShowModal():
+                name = self.g__dialog.GetValue()
+
+                self.g__dialog = DefineSplit(self, self.ar_img_group, name)
+
+                self.g__dialog.ShowModal()
+
+                if self.g__dialog.is_save:
+                    value = self.g__dialog.spilter["value"]
+                    name = self.g__dialog.spilter["name"]
+
+                    self.ar_split_group.append(value)
+                    self.ar_name_group.append(name)
+
+                    self.ar_update_spliter()
+        else:
+            wx.MessageBox("请先导入带切割文件，再新建切割器", "提示", wx.OK | wx.ICON_INFORMATION)
 
     def ar_remove_spliter(self, event):
-        pass
+        if self.ar_use_split == 0:
+            return
+        else:
+            back = wx.MessageBox(f"你确实要移除\n\t{self.ar_name_group[self.ar_use_split]}吗?", "信息",
+                                 wx.YES_NO | wx.ICON_INFORMATION)
+            if back == wx.YES:
+                value = self.ar_split_group.pop(self.ar_use_split - 1)
+                name = self.ar_name_group.pop(self.ar_use_split)
+
+                self.ar_update_spliter()
+
+                wx.MessageBox(f"切割器：{name}\n\t{json.dumps(value, indent=4)}\n已被移除", "信息", wx.OK | wx.ICON_INFORMATION)
+            else:
+                return
 
     def ar_search(self, event):
         value = event.GetString()

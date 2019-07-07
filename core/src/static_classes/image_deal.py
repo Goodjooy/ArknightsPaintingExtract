@@ -358,7 +358,7 @@ class ImageWork(object):
                 val_list = ImageWork.array_split_build_list_builder(split_guider)(value)
                 re_val = []
                 for val in val_list:
-                    re_val.append(ImageWork.g_transform_image(val, size))
+                    re_val.append(ImageWork.g_transform_image(val, size)[0])
 
                 return True, re_val
             except Exception as _:
